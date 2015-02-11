@@ -6,6 +6,8 @@ var fs = require('fs');
 var StaticData = require('./server/static_data');
 var StaticSpatial = new StaticData();
 
+var SQUARE_FOOT_KEY = process.env.SQUARE_FOOT_KEY || '0qhambsf43d7ouwx6c95jezlitk1r2vn';
+
 app.set('views', 'views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');
 app.set('port', (process.env.PORT || 5000));
@@ -17,9 +19,8 @@ app.get('/', function(request, response) {
   response.send('Hello World!');
 });
 
-app.get('/squarefoot', function(request, response) {
-	console.log(process.env.SQUARE_FOOT_KEY)
-  response.send(process.env.SQUARE_FOOT_KEY);
+app.get('/squarefoot', function(req, res) {
+	res.render('squarefoot', { message: 'Congrats, you just set up your app!' });
 });
 
 app.get('/maps',function(req,res){
