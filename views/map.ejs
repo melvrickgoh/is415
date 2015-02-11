@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Geospatial Assignment 1</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/simple-sidebar.css" rel="stylesheet">
+
+    <!-- font awesome -->
+    <link href="font-awesome/css/font-awesome.css" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <div id="wrapper" class="toggled">
+
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <a href="#">
+                        Start Bootstrap
+                    </a>
+                </li>
+                <li>
+                    <a href="#">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Shortcuts</a>
+                </li>
+                <li>
+                    <a href="#">Overview</a>
+                </li>
+                <li>
+                    <a href="#">Events</a>
+                </li>
+                <li>
+                    <a href="#">About</a>
+                </li>
+                <li>
+                    <a href="#">Services</a>
+                </li>
+                <li>
+                    <a href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- jQuery -->
+    <script src="js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="leaflet/leaflet.js"></script>
+
+    <script src="js/vendor/Google.js"></script>
+    <script src="js/tiles/Google.js"></script>
+    <script src="js/tiles/Bing.js"></script>
+
+    <script src='js/vendor/Leaflet.Ajax.min.js'></script>
+    <script src='js/vendor/Omnivore.min.js'></script>
+
+    <!-- Menu Toggle Script -->
+    <script>
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+
+        var map = L.map('map').setView([1.365118, 103.818630], 13);
+        var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+        //var google = new L.Google('ROADMAP');
+        //map.addLayer(google);
+        var bing = new L.BingLayer("AjG85RGpnN3qcJbMNxF7BWtnkq2qc_iVKntqYodZUt7n-cBTkU6qCeU47jfxJStJ");
+        map.addLayer(bing);
+
+        var sgLargeLayer = omnivore.topojson('data/sg_boundary_area_topo.json').addTo(map);
+        console.log(sgLargeLayer);
+
+        var sgLargeLayerGeo = omnivore.geojson('data/sg_boundary_area_geo.json').addTo(map);
+        console.log(sgLargeLayerGeo);
+
+        var geojsonLayer = new L.GeoJSON.AJAX("data/sg_boundary_area_geo.json");
+        console.log(geojsonLayer);
+        map.addLayer(geojsonLayer);
+
+        var maps_controller = new L.Control.Layers( {'OSM':osm, 'Bing':bing}, {'sg boundary':sgLargeLayer, 'sg boundary geo': sgLargeLayerGeo, 'ajax gjson':geojsonLayer }, {'position': 'topright'} );
+        map.addControl(maps_controller);
+
+        console.log(map);
+
+        map.eachLayer(function (layer) {
+            console.log(layer);
+        });
+
+        console.log(map.hasLayer(sgLargeLayer));
+        console.log(map.hasLayer(sgLargeLayerGeo));
+        console.log(map.hasLayer(geojsonLayer));
+
+        var XHR = function(url,callback){
+            var xhr;
+            if (window.XMLHttpRequest)
+              xhr=new XMLHttpRequest();
+            else
+              xhr=new ActiveXObject("Microsoft.XMLHTTP");
+            xhr.onreadystatechange=function(){
+              if (xhr.readyState==4 && xhr.status==200){
+               callback(xhr.responseText);
+              }
+            }
+            xhr.open("GET",url,true);
+            xhr.send();
+        }
+
+        var loadPlanningRegions = function(map){
+            XHR('/api/data/planning_regions',function(response){
+                var planning_geojson = JSON.parse(response);
+                var planning_geo_layer = L.geoJson(planning_geojson).addTo(map);
+                console.log('planning geojson');
+                console.log(planning_geo_layer);
+                console.log(map.hasLayer(planning_geo_layer));
+            });
+        }
+
+        loadPlanningRegions(map);
+    </script>
+
+</body>
+
+</html>
