@@ -75,6 +75,11 @@ app.get('/api/data/planning_regions',function(req,res){
 	res.send(planning_regions_geojson);
 });
 
+app.get('/api/data/mrt',function(req,res){
+	mrt_geojson = StaticSpatial.sg_mrt_geo();
+	res.send(mrt_geojson);
+});
+
 app.get('/api/iron/get',function(req,res){
 	cache.get(req.query.key,function(err,response){
 		if (err) {

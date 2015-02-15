@@ -41,9 +41,85 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
 
   this.initialize = function(){
     this.loadPlanningRegions(this.XHR,this.map,this.layerControl,this.onEachRegionPopup);
+    //init MRT polyline layer
+    this.loadMRTNetwork();
     //init point layers
     this.map.addLayer(this.pointLayerGroup);
     this.layerControl.addOverlay(this.pointLayerGroup,'Place points');
+  }
+
+  this.loadMRTNetwork = function(){
+    var LAYER_CONTROL = this.layerControl,
+    MAP = this.map;
+    this.XHR('/api/data/mrt',function(response){
+      var mrt_layer = L.geoJson(JSON.parse(response),{
+        onEachFeature: function(feature,layer){
+          var default_style = {
+            color: "rgba(0,0,0,0.7)",
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 1,
+            fillColor: "rgba(0,0,0,0.7)"
+          }, ns_style = {
+            color: "rgba(255,0,0,1)",
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 1,
+            fillColor: "rgba(255,0,0,1)"
+          }, ew_style = {
+            color: "rgba(0,153,0,1)",
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 1,
+            fillColor: "rgba(0,153,0,1)"
+          }, circle_style = {
+            color: "rgba(255,255,0,1)",
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 1,
+            fillColor: "rgba(255,255,0,1)"
+          }, ne_style = {
+            color: "rgba(153,51,255,1)",
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 1,
+            fillColor: "rgba(153,51,255,1)"
+          }, tsl_style = {
+            color: "rgba(102,51,0,1)",
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 1,
+            fillColor: "rgba(102,51,0,1)"
+          };
+          var line_type = feature.properties.name;
+          switch(line_type){
+            case 'North South Line (NS)':
+                layer.setStyle(ns_style);
+              break;
+            case 'MRT East West Line (EW)':
+                layer.setStyle(ew_style);
+              break;
+            case 'Circle Line Extension':
+            case 'Circle Line MRT':
+                layer.setStyle(circle_style);
+              break;
+            case 'North East Line (NE)':
+                layer.setStyle(ne_style);
+              break;
+            case 'Thomson Line (TSL)':
+                layer.setStyle(tsl_style);
+              break;
+            default:
+                layer.setStyle(default_style);
+              break;
+          }
+          if (line_type) {
+            layer.bindPopup('<h4>' + line_type + '<\/h4>')
+          }
+        }
+      }).addTo(MAP);
+      LAYER_CONTROL.addOverlay(mrt_layer,'MRT Network');
+    });
   }
 
   this.loadPlacesPointLayer = function(input,token,results){
