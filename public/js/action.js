@@ -28,7 +28,7 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
 
   this.SINGAPORE_LATLON = SINGAPORE_LATLON;
   this.map = L.map('map').setView(this.SINGAPORE_LATLON, 13);
-  this.bing = new L.BingLayer("AjG85RGpnN3qcJbMNxF7BWtnkq2qc_iVKntqYodZUt7n-cBTkU6qCeU47jfxJStJ").addTo(this.map);
+  this.bing = new L.BingLayer("AjG85RGpnN3qcJbMNxF7BWtnkq2qc_iVKntqYodZUt7n-cBTkU6qCeU47jfxJStJ");
   //map.addLayer(bing);
   this.osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
@@ -240,7 +240,7 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
       var planning_geojson = JSON.parse(response);
       var planning_geo_layer = L.geoJson(planning_geojson,{
         onEachFeature: onEachRegionPopup
-      }).addTo(map);
+      });
       layerControl.addOverlay(planning_geo_layer,'Planning Chloropeth');
       var layers = planning_geo_layer.getLayers();
     });
