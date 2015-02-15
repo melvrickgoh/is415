@@ -68,6 +68,10 @@
                         <i id="search_enter_loading" class="fa fa-spinner fa-pulse" style="visibility: hidden; position: absolute;top: 12px;right: 10px;color:rgba(64,153,255, 1);"></i>
                     </div>
                     <div id="map"></div>
+                    <div id="fake_map" style="visbility:hidden"></div>
+                    <div id="taskbar">
+                        <a id="taskbar_search" class="tooltips" href="#"><i id="taskbar_search_icon" class="fa fa-search fa-4x" style=""></i><span>Places Search</span></a>
+                    <div>
                 </div>
             </div>
         </div>
@@ -94,6 +98,11 @@
     <script src="js/vendor/typeahead/typeahead.bundle.min.js"></script>
     <script src="js/vendor/typeahead/bloodhound.min.js"></script>
 
+    <!-- Google Dependency -->
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+
+    <!-- Support Scripts -->
+    <script type="js/google_places.js"></script>
     <!-- Menu Toggle Script -->
     <script src="js/action.js"></script>
 
