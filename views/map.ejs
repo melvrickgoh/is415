@@ -61,16 +61,25 @@
         <div id="page-content-wrapper">
             <div class="container-fluid">
                 <div class="row">
-                    <div id="search_places_container" class="search_places">
-                        <i class="fa fa-search" style="position: absolute;top: 12px;left: 10px;"></i>
-                        <input type="text" id="search_amenities" class="typeahead" placeholder="Search Places categories"/>
-                        <i id="search_enter_arrow" class="fa fa-arrow-right" style="position: absolute;top: 12px;right: 10px;"></i>
-                        <i id="search_enter_loading" class="fa fa-spinner fa-pulse" style="visibility: hidden; position: absolute;top: 12px;right: 10px;color:rgba(64,153,255, 1);"></i>
+                    <div id="super_container">
+                        <div id="search_places_container" class="search_places">
+                            <i class="fa fa-search" style="position: absolute;top: 12px;left: 10px;"></i>
+                            <input type="text" id="search_amenities" class="typeahead" placeholder="Search Places categories"/>
+                            <i id="search_enter_arrow" class="fa fa-arrow-right" style="position: absolute;top: 12px;right: 10px;"></i>
+                            <i id="search_enter_loading" class="fa fa-spinner fa-pulse" style="visibility: hidden; position: absolute;top: 12px;right: 10px;color:rgba(64,153,255, 1);"></i>
+                        </div>
+                        <div id="search_venues_container" class="search_places">
+                            <i class="fa fa-search" style="position: absolute;top: 12px;left: 10px;"></i>
+                            <input type="text" id="search_foursquare" class="typeahead" placeholder="Search Venues categories"/>
+                            <i id="search_venues_enter_arrow" class="fa fa-arrow-right" style="position: absolute;top: 12px;right: 10px;"></i>
+                            <i id="search_venues_enter_loading" class="fa fa-spinner fa-pulse" style="visibility: hidden; position: absolute;top: 12px;right: 10px;color:rgba(64,153,255, 1);"></i>
+                        </div>
                     </div>
                     <div id="map"></div>
                     <div id="fake_map" style="visbility:hidden"></div>
                     <div id="taskbar">
-                        <a id="taskbar_search" class="tooltips" href="#"><i id="taskbar_search_icon" class="fa fa-search fa-4x" style=""></i><span>Places Search (Hotkey: 1)</span></a>
+                        <a id="taskbar_places_search" class="tooltips" href="#"><i id="taskbar_search_icon" class="fa fa-google fa-4x" style=""></i><span>Places Search (Hotkey: 1)</span></a>
+                        <a id="taskbar_venues_search" class="tooltips" href="#"><i id="taskbar_venues_icon" class="fa fa-foursquare fa-4x" style=""></i><span>Venues Search (Hotkey: 2)</span></a>
                     <div>
                 </div>
             </div>

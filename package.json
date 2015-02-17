@@ -13,7 +13,8 @@
     "fs"          : "0.0.2",
     "googleapis"  : "1.1.x",
     "googleplaces": "0.4.0",
-    "iron-cache"  : "0.2.2"
+    "iron-cache"  : "0.2.2",
+    "node-foursquare-venues" : "1.1.0"
   },
   "engines": {
     "node": "0.10.x"

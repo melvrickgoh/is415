@@ -15,9 +15,12 @@ var GooglePlacesAdapter = new Google_Places_Interface();
 var IronCache = require('./services/IronCache');
 var cache = new IronCache();
 
+var Foursquare_Venues_Interface = require('./services/FoursquareVenues');
+var FoursquareVenuesAdapter = new Foursquare_Venues_Interface();
+
 //Controllers
 var places_controller = require('./server/places_controller');
-var PlacesController = new places_controller(GoogleAPIs,GooglePlacesAdapter);
+var PlacesController = new places_controller(GoogleAPIs,GooglePlacesAdapter,FoursquareVenuesAdapter);
 
 var SQUARE_FOOT_KEY = process.env.SQUARE_FOOT_KEY || '0qhambsf43d7ouwx6c95jezlitk1r2vn';
 
@@ -44,6 +47,29 @@ app.get('/autosuggest/places',function(req,res){
 	res.send(GoogleAPIs.autosuggestPlaces());
 });
 
+app.get('/api/venues_search',function(req,res){
+	var venue_id = req.query.id,
+	searchURL = req.originalUrl;
+	//check cache for results
+	cache.cacheRequest(searchURL,function(isCached,result){
+		if (isCached) {		//is cached: use cache result
+			console.log(result);
+			console.log(result.value);
+			res.send(result);
+		}else{						//not cached so find more
+			PlacesController.searchVenues(venue_id,function(err,response){
+				console.log(err);
+				console.log(response);
+				if (err) {
+					res.send({"error":true});
+				}else{
+					res.send(response);
+				}
+			});
+		}
+	});
+});
+
 app.get('/api/places_search',function(req,res){
 	var place_category = req.query.place,
 	searchURL = req.originalUrl;
@@ -59,6 +85,26 @@ app.get('/api/places_search',function(req,res){
 				console.log(response);
 				res.send('places google search');
 			});
+		}
+	});
+});
+
+app.get('/api/foursquare/categories',function(req,res){
+	FoursquareVenuesAdapter.categories(function(err,results){
+		if (err) {
+			res.send({"error":true});
+		}else{
+			res.send(results);
+		}
+	});
+});
+
+app.get('/api/foursquare/custom_categories',function(req,res){
+	FoursquareVenuesAdapter.custom_categories(function(err,results){
+		if (err) {
+			res.send({"error":true});
+		}else{
+			res.send(results);
 		}
 	});
 });

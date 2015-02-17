@@ -22,9 +22,28 @@ var GOOGLE_PLACES = function (map,base_location){
   }
 }
 
-var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
+var FOURSQUARE_VENUES = function(XHR, SINGAPORE_LATLON){
+  this.venues_hash;
+  this.XHR = XHR;
+  this.SINGAPORE_LATLON = SINGAPORE_LATLON;
+
+  this.singaporeVenuesSearch = function(place_name,callback){
+    var venueID = this.venues_hash[place_name];
+    XHR('/api/venues_search?id='+venueID.id,function(response){
+      var res = JSON.parse(response);
+      if (res.error){
+        callback(true);
+      } else {
+        callback(false,res);
+      }
+    });
+  }
+}
+
+var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
   this.XHR = XHR;
   this.PLACES_API = PLACES_API;
+  this.VENUES_API = VENUES_API;
 
   this.SINGAPORE_LATLON = SINGAPORE_LATLON;
   this.map = L.map('map').setView(this.SINGAPORE_LATLON, 13);
@@ -122,6 +141,16 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
     });
   }
 
+  this.loadVenuesPointLayer = function(input,results){
+    if (this.pointLayers[input]) {return;}
+
+    this.pointLayers[input] = {
+      layer   : this.createVenuesPointLayer(input,results.response.venues),//generate layer here
+      tokens  : [input]
+    };
+    this.pointLayerGroup.addLayer(this.pointLayers[input]['layer']);
+  }
+
   this.loadPlacesPointLayer = function(input,token,results){
     var pointLayerPayload = this.pointLayers[input]
     if (pointLayerPayload) {
@@ -149,6 +178,14 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
     return L.layerGroup(points);
   }
 
+  this.createVenuesPointLayer = function(input,payloadGroup){
+    var points = [];
+    for (var i in payloadGroup) {
+      points.push(this.createVenuePointMarker(input,payloadGroup[i]));
+    }
+    return L.layerGroup(points);
+  }
+
   this.addToPointLayer = function(payloadGroup,layergroup){
     for (var i in payloadGroup) {
       layergroup.addLayer(this.createPlacePointMarker(payloadGroup[i]));
@@ -163,6 +200,17 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
       name      : payload.name,
       address   : payload.vicinity,
       photo     : payload.photos && payload.photos[0] ? payload.photos[0].getUrl : ''
+    }
+  }
+
+  this.extractVenuePointData =function(payload){
+    return {
+      lat       : payload.location.lat,
+      lng       : payload.location.lng,
+      id        : payload.id,
+      name      : payload.name,
+      address   : payload.location.address,
+      stats     : payload.stats
     }
   }
 
@@ -189,10 +237,35 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API){
     return marker;
   }
 
+  this.createVenuePointMarker = function(input,payload){
+    var info = this.extractVenuePointData(payload);
+    var icon = this.VENUES_API.venues_hash[input].icon,
+    iconURL = icon.prefix + 'bg_64' + icon.suffix;
+    var marker = L.marker([info.lat,info.lng],{icon: this.generatePlacePointIcon(iconURL)});
+    
+    var content = '<h4>' + info.name + '<\/h4>' + '<p>Address: ' + info.address + '<br \/>';
+    
+    if (payload.rating) {
+      content += 'Rating: ' + payload.rating + '<br \/>';
+    }
+    if (payload.website) {
+      content += '<a href="' + payload.website + '">Official web page<\/a><br \/>';
+    }
+    if (payload.stats) {
+      content += 'Check In(s): ' + payload.stats.checkinsCount + '<br \/>';
+      content += 'Users: ' + payload.stats.usersCount + '<br \/>';
+    }
+
+    content += '<\/p>';
+    marker.bindPopup(content);
+
+    return marker;
+  }
+
   this.generatePlacePointIcon = function(iconUrl){
     return L.icon({
       iconUrl: iconUrl,
-      iconSize: [20, 20],
+      iconSize: [30, 30],
       iconAnchor: [0, 0]
       //popupAnchor: [-3, -76]
     });
@@ -256,7 +329,11 @@ $("#menu-toggle").click(function(e) {
 $('#map').height(window.innerHeight);
 $('#search_places_container').width(542);
 $('#search_places_container').css('left',window.innerWidth/2 - 540/2);
+$('#search_venues_container').width(542);
+$('#search_venues_container').css('left',window.innerWidth/2 - 540/2);
+
 $('#search_amenities').width(500);
+$('#search_foursquare').width(500);
 
 function cancelEvents(){
     if ($('#search_places_container').css('visibility') == 'visible'){
@@ -275,28 +352,60 @@ function hidePlacesSearch(searchContainer){
   searchContainer.css('visibility','hidden');
 }
 
+function showVenuesSearch(searchContainer){
+  $('#taskbar_venues_icon').css('color','rgba(255,0,132,1)');
+  searchContainer.css('visibility','visible');
+  $('#search_foursquare').focus();
+}
+
+function hideVenuesSearch(searchContainer){
+  $('#taskbar_venues_icon').css('color','rgba(0,114,177,1)');
+  searchContainer.css('visibility','hidden');
+}
+
 function toggleEvents(e){
     e = e || window.event;
+    var searchPlacesContainer = $('#search_places_container'),
+    searchVenuesContainer = $('#search_venues_container');
     var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
     if (charCode && String.fromCharCode(charCode) == "`") {
         $("#wrapper").toggleClass("toggled");
     }
 
     if (charCode && String.fromCharCode(charCode) == "1") {
-        var searchContainer = $('#search_places_container');
-        if (searchContainer.css('visibility') == 'hidden') {
-          showPlacesSearch(searchContainer);
-        }else{
-          hidePlacesSearch(searchContainer);
-        }
-        setTimeout(function(){$('#search_amenities').val("");},100);
+      hideVenuesSearch(searchVenuesContainer);
+      if (searchPlacesContainer.css('visibility') == 'hidden') {
+        showPlacesSearch(searchPlacesContainer);
+      }else{
+        hidePlacesSearch(searchPlacesContainer);
+      }
+      setTimeout(function(){$('#search_amenities').val("");},100);
+    }
+
+    if (charCode && String.fromCharCode(charCode) == "2") {
+      hidePlacesSearch(searchPlacesContainer);
+      if (searchVenuesContainer.css('visibility') == 'hidden') {
+        showVenuesSearch(searchVenuesContainer);
+      }else{
+        hideVenuesSearch(searchVenuesContainer);
+      }
+      setTimeout(function(){$('#search_foursquare').val("");},100);
     }
 }
 document.onkeypress=toggleEvents
 
-var places_search_taskbar_icon = document.getElementById('taskbar_search');
+var places_search_taskbar_icon = document.getElementById('taskbar_places_search'),
+venues_search_taskbar_icon = document.getElementById('taskbar_venues_search');
 places_search_taskbar_icon.onclick = function(){
   var searchContainer = $('#search_places_container');
+  if (searchContainer.css('visibility') == 'hidden') {
+    showPlacesSearch(searchContainer);
+  }else{
+    hidePlacesSearch(searchContainer);
+  }
+}
+venues_search_taskbar_icon.onclick = function(){
+  var searchContainer = $('#search_venues_container');
   if (searchContainer.css('visibility') == 'hidden') {
     showPlacesSearch(searchContainer);
   }else{
@@ -329,32 +438,54 @@ fake_google_map = new google.maps.Map(document.getElementById('fake_map'),{
 });
 
 var PLACES_API = new GOOGLE_PLACES(fake_google_map,fake_google_map_location);
-var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API);
+var VENUES_API = new FOURSQUARE_VENUES(XHR,SINGAPORE_LATLON);
+var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API);
 MAP.initialize();
 
-var place_categories;
+var place_categories,
+venues_categories,
+venues_hash;
 
 var submitSearchParameters = function(){
-    var input = $('#search_amenities').val();
-    var showSearchErrorMessage = function(){
+  var input = $('#search_amenities').val();
+  var showSearchErrorMessage = function(){
 
-    };
+  };
 
-    if ($.inArray(input, place_categories) > -1){
-        showLoader(); //show loading spinner for results
-        PLACES_API.singaporePlacesSearch(input,function(results,status,pagination){
-          if (status == google.maps.places.PlacesServiceStatus.OK) {
+  if ($.inArray(input, place_categories) > -1){
+      showLoader(); //show loading spinner for results
+      PLACES_API.singaporePlacesSearch(input,function(results,status,pagination){
+        if (status == google.maps.places.PlacesServiceStatus.OK) {
 
-            MAP.loadPlacesPointLayer(input,pagination.D,results);
-            if (pagination.hasNextPage){
-              pagination.nextPage();
-            }else{
-              hideLoader(); // finally done loading
-            }
-
+          MAP.loadPlacesPointLayer(input,pagination.D,results);
+          if (pagination.hasNextPage){
+            pagination.nextPage();
+          }else{
+            hideLoader(); // finally done loading
           }
-        });
-    }
+
+        }
+      });
+  }
+}
+
+var submitVenuesSearchParameters = function(){
+  var input = $('#search_foursquare').val();
+  var showSearchErrorMessage = function(){
+
+  };
+
+  if ($.inArray(input, venues_categories) > -1){
+      showVenuesLoader(); //show loading spinner for results
+      VENUES_API.singaporeVenuesSearch(input,function(err,response){
+        if (err) {
+          alert('Unable to load layer. Please try again later.');
+        }else{
+          MAP.loadVenuesPointLayer(input,response);
+        }
+        hideVenuesLoader();
+      });
+  }
 }
 
 //search functions
@@ -370,6 +501,17 @@ search_places_arrow.onclick = function(e){
     submitSearchParameters();
 }
 
+var search_venues_arrow = document.getElementById('search_venues_enter_arrow');
+search_venues_arrow.onmouseover = function(e){
+  search_venues_arrow.style.color = 'rgba(64,153,255, 0.8)';
+}
+search_venues_arrow.onmouseout = function(e){
+  search_venues_arrow.style.color = 'rgba(0,0,0,0.8)';
+}
+search_venues_arrow.onclick = function(e){
+  submitVenuesSearchParameters();
+}
+
 var search_places_loading = document.getElementById('search_enter_loading');
 var showLoader = function(){
     search_places_arrow.style.visibility = 'hidden';
@@ -377,6 +519,15 @@ var showLoader = function(){
 }, hideLoader = function(){
     search_places_loading.style.visibility = 'hidden';
     search_places_arrow.style.visibility = 'visible';
+}
+
+var search_venues_loading = document.getElementById('search_venues_enter_loading');
+var showVenuesLoader = function(){
+    search_venues_arrow.style.visibility = 'hidden';
+    search_venues_loading.style.visibility = 'visible';
+}, hideVenuesLoader = function(){
+    search_venues_loading.style.visibility = 'hidden';
+    search_venues_arrow.style.visibility = 'visible';
 }
 
 var autosuggestPlacesSearch = function(){
@@ -413,6 +564,45 @@ var autosuggestPlacesSearch = function(){
   });
 }
 
+var autosuggestVenuesSearch = function(){
+  XHR('/api/foursquare/custom_categories',function(response){
+    var venues_results = JSON.parse(response);
+    venues_categories = venues_results.array,
+    venues_hash = venues_results.hash;
+
+    VENUES_API.venues_hash = venues_hash;
+
+    var states = new Bloodhound({
+      datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      local: $.map(venues_categories, function(state) { return { value: state }; })
+    });
+     
+    // kicks off the loading/processing of `local` and `prefetch`
+    states.initialize();
+     
+    $('#search_foursquare').typeahead({
+      hint: true,
+      highlight: true,
+      minLength: 1
+    },
+    {
+      name: 'states',
+      displayKey: 'value',
+      // `ttAdapter` wraps the suggestion engine in an adapter that
+      // is compatible with the typeahead jQuery plugin
+      source: states.ttAdapter(),
+      templates: {
+        empty: [
+          '<div class="empty-message">',
+          'No such category found',
+          '</div>'
+        ].join('\n')
+      }
+    });
+  });
+}
+
 var search_places_input = document.getElementById('search_amenities');
 search_places_input.onkeypress = function(e){
     if (e.keyCode == 49) {
@@ -423,4 +613,15 @@ search_places_input.onkeypress = function(e){
     }
 }
 
+var search_venues_input = document.getElementById('search_foursquare');
+search_venues_input.onkeypress = function(e){
+    if (e.keyCode == 49) {
+        e.preventDefault();
+    }
+    if (e.keyCode == 13) {
+        submitVenuesSearchParameters();
+    }
+}
+
 autosuggestPlacesSearch();
+autosuggestVenuesSearch();
