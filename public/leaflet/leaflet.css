@@ -470,9 +470,11 @@
 	}
 
 
-/* div icon */
+/* div icon 
+HELLO WORLD HELLOWORLD
+*/
 
 .leaflet-div-icon {
-	background: #fff;
-	border: 1px solid #666;
+	background: rgba(0,0,0,0);
+	border: 0px solid #666;
 	}

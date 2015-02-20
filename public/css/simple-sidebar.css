@@ -3,7 +3,6 @@
  * Code licensed under the Apache License v2.0.
  * For details, see http://www.apache.org/licenses/LICENSE-2.0.
  */
-
 /* Toggle Styles */
 
 #wrapper {
@@ -45,6 +44,36 @@
 #wrapper.toggled #page-content-wrapper {
     position: absolute;
     margin-right: -250px;
+}
+
+/* Dashboard styles */
+.base_control_bing_icon{
+    background: transparent url(../images/bing_grey.png);
+    overflow: auto;
+    width: 25px;
+    height: 28px;
+    float: left;
+    transform: translate(20px,5px);
+}
+
+.base_control_bing_icon:hover, .base_control_bing_icon_selected{
+    background: transparent url(../images/bing_yellow.png);
+    overflow: auto;
+    width: 25px;
+    height: 28px;
+    float: left;
+    transform: translate(20px,5px);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.fa-openid:hover,.base_control_osm_icon_selected{
+    color:rgba(100,150,250,1);
+}
+
+#base_control_icon_google:hover, .base_control_google_icon_selected {
+    color:rgba(221, 75, 57, 1);
 }
 
 /* Map styles */
@@ -148,7 +177,7 @@
     transform: translate(-50%, 0);
     background-color:rgba(255,255,255,0.8);
     border-radius: 15px 15px 0px 0px;
-    z-index: 1;
+    z-index: 1000;
 }
 
 #taskbar_places_search {
@@ -207,7 +236,7 @@
     color: #999999;
 }
 
-.sidebar-nav li a:hover {
+.sidebar-nav li a:hover, .sidebar-nav li .selected {
     text-decoration: none;
     color: #fff;
     background: rgba(255,255,255,0.2);
@@ -219,21 +248,46 @@
 }
 
 .sidebar-nav > .sidebar-brand {
-    height: 65px;
+    height: 55px;
     font-size: 18px;
-    line-height: 60px;
+    line-height: 55px;
 }
 
 .sidebar-nav > .sidebar-brand a {
     color: #999999;
 }
 
-.sidebar-nav > .sidebar-brand a:hover {
-    color: #fff;
+.sidebar-nav > .sidebar-brand a.polyline_selected,
+.sidebar-nav > .sidebar-brand a.polyline:hover,
+.sidebar-nav > #polyline_layer_group a:hover,
+.sidebar-nav > #polyline_layer_group a.polyline_selected {
+    color: rgba(0, 172, 237, 1);
     background: none;
 }
 
+.sidebar-nav > .sidebar-brand a.pointlayer_selected,
+.sidebar-nav > .sidebar-brand a.pointlayer:hover,
+.sidebar-nav > #point_layer_group a:hover,
+.sidebar-nav > #point_layer_group a.pointlayer_selected {
+    color: rgba(221, 75, 57, 1);
+    background: none;
+}
 
+.sidebar-nav > .sidebar-brand a.proportionallayer_selected,
+.sidebar-nav > .sidebar-brand a.proportionallayer:hover,
+.sidebar-nav > #proportional_layer_group a:hover,
+.sidebar-nav > #proportional_layer_group a.proportionallayer_selected {
+    color: rgba(130, 203, 0, 1);
+    background: none;
+}
+
+.sidebar-nav > .sidebar-brand a.choroplethlayer_selected,
+.sidebar-nav > .sidebar-brand a.choroplethlayer:hover,
+.sidebar-nav > #choropleth_layer_group a:hover,
+.sidebar-nav > #choropleth_layer_group a.choroplethlayer_selected {
+    color: rgba(153, 50, 205, 1);
+    background: none;
+}
 
 @media(min-width:768px) {
     #wrapper {
@@ -295,4 +349,24 @@ a:hover.tooltips span {
   left: 40%;
   margin-left: -76px;
   z-index: 999;
+}
+#legend{
+    position: absolute;
+    height: 120px;
+    width: 150px;
+    left: 10px;
+    bottom: 10px;
+    z-index: 10000;
+    background-color: rgba(255,255,255,0.5);
+    background-image: url(../images/legend.png);
+}
+#region_legend{
+    position: absolute;
+    height: 120px;
+    width: 150px;
+    right: 10px;
+    bottom: 10px;
+    z-index: 10000;
+    background-color: rgba(255,255,255,0.5);
+    background-image: url(../images/region.png);
 }

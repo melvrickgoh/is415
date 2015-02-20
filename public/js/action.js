@@ -1,4 +1,33 @@
 //class declarations
+var COLOR_PALETTE = function() {
+  var colors = [
+    'rgba(0, 172, 237, 1)',
+    'rgba(59, 89, 152, 1)',
+    'rgba(221, 75, 57, 1)',
+    'rgba(203, 32, 39, 1)',
+    'rgba(0, 123, 182, 1)',
+    'rgba(187, 0, 0, 1)',
+    'rgba(170, 212, 80, 1)',
+    'rgba(50, 80, 109, 1)',
+    'rgba(81, 127, 164, 1)',
+    'rgba(255, 0, 132, 1)',
+    'rgba(234, 76, 137, 1)',
+    'rgba(168, 36, 0, 1)',
+    'rgba(0, 114, 177, 1)',
+    'rgba(91, 154, 104, 1)',
+    'rgba(69, 102, 142, 1)',
+    'rgba(33, 117, 155, 1)',
+    'rgba(235, 72, 35, 1)',
+    'rgba(123, 0, 153, 1)',
+    'rgba(251, 143, 61, 1)',
+    'rgba(255, 58, 0, 1)'
+  ]
+
+  this.randomColor = function(){
+    return colors[Math.floor(Math.random() * (colors.length))];
+  }
+}
+
 var GOOGLE_PLACES = function (map,base_location){
   this.API_KEY = 'AIzaSyBF9YdzEWQUMpYLLVkRu_UXDahy2UOCDmw';
   this.map = map;
@@ -40,37 +69,451 @@ var FOURSQUARE_VENUES = function(XHR, SINGAPORE_LATLON){
   }
 }
 
-var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
-  this.XHR = XHR;
-  this.PLACES_API = PLACES_API;
-  this.VENUES_API = VENUES_API;
+var SIDEBAR_CONTROLLER = function(MAP_CONTROLLER){
+  MAP = MAP_CONTROLLER;
 
-  this.SINGAPORE_LATLON = SINGAPORE_LATLON;
-  this.map = L.map('map').setView(this.SINGAPORE_LATLON, 13);
+  OSM_LINK = $('#base_control_osm');
+  OSM_LINK_ICON = $('#base_control_icon_osm');
+
+  BING_LINK = $('#base_control_bing');
+  BING_LINK_ICON = $('#base_control_icon_bing');
+
+  GOOGLE_LINK = $('#base_control_google');
+  GOOGLE_LINK_ICON = $('#base_control_icon_google');
+
+  this.initialize = function(){
+    OSM_LINK.click(toggleOSMBase);
+    BING_LINK.click(toggleBingBase);
+    GOOGLE_LINK.click(toggleGoogleBase);
+    //pre-loaded data
+    this.addPolylineSubLink('mrt_network','MRT Network',false,'fa-train');
+  }
+
+  function toggleGoogleBase() {
+    if (GOOGLE_LINK_ICON.hasClass('base_control_google_icon_selected')) {   //switch off OSM
+      GOOGLE_LINK_ICON.removeClass('base_control_google_icon_selected');
+      GOOGLE_LINK.removeClass('selected');
+      MAP.hideGoogleBasemap();
+    } else {        //switch on OSM
+      GOOGLE_LINK_ICON.addClass('base_control_google_icon_selected');
+      GOOGLE_LINK.addClass('selected');
+
+      BING_LINK_ICON.removeClass('base_control_bing_icon_selected');
+      BING_LINK_ICON.addClass('base_control_bing_icon');
+      BING_LINK.removeClass('selected');
+      OSM_LINK_ICON.removeClass('base_control_osm_icon_selected');
+      OSM_LINK.removeClass('selected');
+
+      MAP.hideBingBasemap();
+      MAP.hideOSMBasemap();
+      MAP.showGoogleBasemap();
+    }
+  }
+
+  function toggleOSMBase(){
+    if (OSM_LINK_ICON.hasClass('base_control_osm_icon_selected')) {   //switch off OSM
+      OSM_LINK_ICON.removeClass('base_control_osm_icon_selected');
+      OSM_LINK.removeClass('selected');
+      MAP.hideOSMBasemap();
+    } else {        //switch on OSM
+      OSM_LINK_ICON.addClass('base_control_osm_icon_selected');
+      OSM_LINK.addClass('selected');
+
+      BING_LINK_ICON.removeClass('base_control_bing_icon_selected');
+      BING_LINK_ICON.addClass('base_control_bing_icon');
+      BING_LINK.removeClass('selected');
+      GOOGLE_LINK_ICON.removeClass('base_control_google_icon_selected');
+      GOOGLE_LINK.removeClass('selected');
+
+      MAP.hideGoogleBasemap();
+      MAP.hideBingBasemap();
+      MAP.showOSMBasemap();
+    }
+  }
+
+  function toggleBingBase(){
+    if (BING_LINK_ICON.hasClass('base_control_bing_icon_selected')) {
+      BING_LINK_ICON.removeClass('base_control_bing_icon_selected');
+      BING_LINK_ICON.addClass('base_control_bing_icon');
+      BING_LINK.removeClass('selected');
+      MAP.hideBingBasemap();
+    } else { //switch on bing
+      BING_LINK_ICON.addClass('base_control_bing_icon_selected');
+      BING_LINK_ICON.removeClass('base_control_bing_icon');
+      BING_LINK.addClass('selected');
+
+      OSM_LINK_ICON.removeClass('base_control_osm_icon_selected');
+      OSM_LINK.removeClass('selected');
+      GOOGLE_LINK_ICON.removeClass('base_control_google_icon_selected');
+      GOOGLE_LINK.removeClass('selected');
+
+      MAP.hideGoogleBasemap();
+      MAP.hideOSMBasemap();
+      MAP.showBingBasemap();
+    }
+  }
+
+  POLYLINE_MASTER_LINK = $('#super_link_polyline');
+  POLYLINE_MASTER_LINK.click(toggleSuperPolyline);
+
+  POLYLINE_GROUP = $('#polyline_layer_group');
+  POLYLINE_LINKS = {};
+
+  POINTLAYER_MASTER_LINK = $('#super_link_point');
+  POINTLAYER_MASTER_LINK.click(toggleSuperPointGroup);
+
+  POINTLAYER_GROUP = $('#point_layer_group');
+  POINTLAYER_LINKS = {};
+
+  PROPORTIONAL_MASTER_LINK = $('#super_link_proportional');
+  PROPORTIONAL_MASTER_LINK.click(toggleSuperProportionalGroup);
+
+  PROPORTIONAL_GROUP = $('#proportional_layer_group');
+  PROPORTIONAL_LINKS = {};
+
+  CHOROPLETH_MASTER_LINK = $('#super_link_choropleth');
+  CHOROPLETH_MASTER_LINK.click(toggleSuperChoroplethGroup);
+
+  CHOROPLETH_GROUP = $('#choropleth_layer_group');
+  CHOROPLETH_LINKS = {};
+
+  function deactivateSublinks(links,className){
+    var keys = Object.keys(links);
+    for (var i in keys) {
+      links[keys[i]]["link"].removeClass(className);
+    }
+  }
+
+  function reinstateSublinks(links,className){
+    var keys = Object.keys(links);
+    for (var i in keys) {
+      if (links[keys[i]]["active"]) {
+        links[keys[i]]["link"].addClass(className);
+      }
+    }
+  }
+
+  function toggleSuperChoroplethGroup(){
+    if (CHOROPLETH_MASTER_LINK.hasClass('choroplethlayer_selected')) {
+      MAP.CHLOROPETH_CONTROLLER.hideAll();
+      deactivateSublinks(CHOROPLETH_LINKS,'choroplethlayer_selected');
+      CHOROPLETH_MASTER_LINK.removeClass('choroplethlayer_selected');
+    } else {
+      MAP.CHLOROPETH_CONTROLLER.showAll();
+      reinstateSublinks(CHOROPLETH_LINKS,'choroplethlayer_selected');
+      CHOROPLETH_MASTER_LINK.addClass('choroplethlayer_selected');
+    }
+  }
+
+  function toggleSuperPolyline(){
+    if (POLYLINE_MASTER_LINK.hasClass('polyline_selected')) {
+      MAP.POLYLINE_CONTROLLER.hideAll();
+      deactivateSublinks(POLYLINE_LINKS,'polyline_selected');
+      POLYLINE_MASTER_LINK.removeClass('polyline_selected');
+    } else {
+      MAP.POLYLINE_CONTROLLER.showAll();
+      reinstateSublinks(POLYLINE_LINKS,'polyline_selected');
+      POLYLINE_MASTER_LINK.addClass('polyline_selected');
+    }
+  }
+
+  function toggleSuperPointGroup(){
+    if (POINTLAYER_MASTER_LINK.hasClass('pointlayer_selected')) {
+      MAP.POINT_CONTROLLER.hideAll();
+      deactivateSublinks(POINTLAYER_LINKS,'pointlayer_selected');
+      POINTLAYER_MASTER_LINK.removeClass('pointlayer_selected');
+      $('#region_legend').css('visibility','hidden');
+    } else {
+      MAP.POINT_CONTROLLER.showAll();
+      reinstateSublinks(POINTLAYER_LINKS,'pointlayer_selected');
+      POINTLAYER_MASTER_LINK.addClass('pointlayer_selected');
+      $('#region_legend').css('visibility','visible');
+    }
+  }
+
+  function toggleSuperProportionalGroup(){
+    if (PROPORTIONAL_MASTER_LINK.hasClass('proportionallayer_selected')) {
+      MAP.PROPORTIONAL_CONTROLLER.hideAll();
+      deactivateSublinks(PROPORTIONAL_LINKS,'proportionallayer_selected');
+      PROPORTIONAL_MASTER_LINK.removeClass('proportionallayer_selected');
+      $('#legend').css('visibility','hidden');
+    } else {
+      MAP.PROPORTIONAL_CONTROLLER.showAll();
+      reinstateSublinks(PROPORTIONAL_LINKS,'proportionallayer_selected');
+      PROPORTIONAL_MASTER_LINK.addClass('proportionallayer_selected');
+      $('#legend').css('visibility','visible');
+    }
+  }
+
+  this.addChoroplethLayerSublink = function(id,textValue,faIcon,faIconColor){
+    var new_link = addSubgroupLink(CHOROPLETH_GROUP,id,textValue,false,faIcon,undefined,undefined,faIconColor);
+    new_link.addClass('choroplethlayer_selected');
+    new_link.click(function(e){
+      if (new_link.hasClass('choroplethlayer_selected')) {
+        MAP.CHLOROPETH_CONTROLLER.hide(id);
+        CHOROPLETH_LINKS[id]["active"] = false;
+        new_link.removeClass('choroplethlayer_selected');
+      } else {
+        MAP.CHLOROPETH_CONTROLLER.show(id);
+        CHOROPLETH_LINKS[id]["active"] = true;
+        new_link.addClass('choroplethlayer_selected');
+      }
+    });
+    CHOROPLETH_LINKS[id] = {"link":new_link,"active":true};
+  }
+
+  this.addProportionalLayerSubLink = function(id,textValue,faIcon,faIconColor){
+    var new_link = addSubgroupLink(PROPORTIONAL_GROUP,id,textValue,false,faIcon,undefined,undefined,faIconColor);
+    new_link.addClass('proportionallayer_selected');
+    new_link.click(function(e){
+      if (new_link.hasClass('proportionallayer_selected')) {
+        MAP.PROPORTIONAL_CONTROLLER.hide(id);
+        PROPORTIONAL_LINKS[id]["active"] = false;
+        new_link.removeClass('proportionallayer_selected');
+      } else {
+        MAP.PROPORTIONAL_CONTROLLER.show(id);
+        PROPORTIONAL_LINKS[id]["active"] = true;
+        new_link.addClass('proportionallayer_selected');
+      }
+    });
+    PROPORTIONAL_LINKS[id] = {"link":new_link,"active":true};
+  }
+
+  this.addPointlayerSubLink = function(id,textValue,isCustomIcon,faIcon,customIconLink,customIconColor){
+    var new_link = addSubgroupLink(POINTLAYER_GROUP,id,textValue,isCustomIcon,faIcon,customIconLink,customIconColor);
+    new_link.addClass('pointlayer_selected');
+    new_link.click(function(e){
+      if (new_link.hasClass('pointlayer_selected')) {
+        MAP.POINT_CONTROLLER.hide(id);
+        POINTLAYER_LINKS[id]["active"] = false;
+        new_link.removeClass('pointlayer_selected');
+      } else {
+        MAP.POINT_CONTROLLER.show(id);
+        POINTLAYER_LINKS[id]["active"] = true;
+        new_link.addClass('pointlayer_selected');
+      }
+    });
+    POINTLAYER_LINKS[id] = {"link":new_link,"active":true};
+  }
+  
+  this.addPolylineSubLink = function(id,textValue,isCustomIcon,faIcon){
+    var new_link = addSubgroupLink(POLYLINE_GROUP,id,textValue,isCustomIcon,faIcon);
+    new_link.addClass('polyline_selected');
+    new_link.click(function(e){
+      if (new_link.hasClass('polyline_selected')) {
+        MAP.POLYLINE_CONTROLLER.hide(id);
+        POLYLINE_LINKS[id]["active"] = false;
+        new_link.removeClass('polyline_selected');
+      } else {
+        MAP.POLYLINE_CONTROLLER.show(id);
+        POLYLINE_LINKS[id]["active"] = true;
+        new_link.addClass('polyline_selected');
+      }
+    });
+    POLYLINE_LINKS[id] = {"link":new_link,"active":true};
+  }
+//tackle the custom color and positioning on dashboard
+  function addSubgroupLink(parent_list_group,id,textValue,isCustomIcon,faIcon,customIconLink,customIconColor,faIconColor){
+    var icon = $('<i></i>');
+    if (isCustomIcon) {
+      icon
+      .css({
+        "background": "transparent url("+customIconLink+")",
+        "overflow": "auto",
+        "width": "22px",
+        "height": "22px",
+        "background-color": customIconColor,
+        "left": "10px",
+        "position": "absolute",
+        "background-size": "cover"
+      });
+    } else {
+      icon
+      .attr({
+        class: "fa " + faIcon
+      });
+      if (faIconColor) { icon.css({
+        "color": faIconColor,
+        "width": "22px",
+        "height": "22px",
+        "border-radius": "11px",
+        "position":"absolute",
+        "left": "10px"
+      }); }
+    }
+
+    var new_link = $('<a></a>')
+      .attr({
+        id: id,
+        href: "#"
+      })
+      .text(textValue);
+    new_link.append(icon);
+    parent_list_group.append($('<p></p>').append(new_link));
+    return new_link;
+  }
+}
+
+var SUBGROUP_MAP_CONTROLLER = function(map,type){
+  this.GROUP = new L.layerGroup();
+  this.HASH = {};
+  this.type = type;
+  this.MIN = 999999;
+  this.MAX = 0;
+  this.bucketSizes = [0,100,250,500,1000,10000];
+  this.cBucketSizes = [0,200,500,1000,2000,10000];
+  this.cCircleSize = {
+    0:{'opacity':.1},
+    200:{'opacity':.2},
+    500:{'opacity':.35},
+    1000:{'opacity':.5},
+    2000:{'opacity':.7},
+    10000:{'opacity':.9},
+    99999:{'opacity':1}
+  }
+  this.circleSize = {
+    0:{'size':50,'opacity':1},
+    100:{'size':100,'opacity':.84},
+    250:{'size':200,'opacity':.7},
+    500:{'size':350,'opacity':.56},
+    1000:{'size':550,'opacity':.42},
+    10000:{'size':750,'opacity':.28},
+    99999:{'size':1000,'opacity':.14}
+  }
+
+  //initialization
+  map.addLayer(this.GROUP);
+
+  this.hideAll = function(){
+    map.removeLayer(this.GROUP);
+  }
+
+  this.showAll = function(){
+    map.addLayer(this.GROUP);
+  }
+
+  this.add = function(key,name,layer){
+    this.HASH[key] = {"name":name, "layer":layer};
+    this.GROUP.addLayer(layer);
+    //this.calibrateStats(key,layer);
+  }
+
+  this.remove = function(key){
+    this.GROUP.removeLayer(this.HASH[key]["layer"]);
+    this.HASH[key] = undefined;
+    return this.GROUP.getLayers().length == 0;
+  }
+
+  this.show = function(key){
+    if (this.HASH[key]) {
+      if (this.GROUP.hasLayer(this.HASH[key]["layer"])) {
+        return;
+      } else {
+        this.GROUP.addLayer(this.HASH[key]["layer"]);
+      }
+    }
+  }
+
+  this.hide = function(key){ //returns if hash is empty
+    this.GROUP.removeLayer(this.HASH[key]["layer"]);
+  }
+
+  this.calibrateStats = function(key,count){
+    if (count > this.MAX) { this.MAX = count; }
+    if (count < this.MIN) { this.MIN = count; }
+    this.HASH[key]["category"] = this.bucketize(count);
+  }
+
+  this.choroBucketize = function(layerCount){
+    if (layerCount < this.cBucketSizes[1]){ return this.cBucketSizes[0]; }
+    if (layerCount < this.cBucketSizes[2]){ return this.cBucketSizes[1]; }
+    if (layerCount < this.cBucketSizes[3]){ return this.cBucketSizes[2]; }
+    if (layerCount < this.cBucketSizes[4]){ return this.cBucketSizes[3]; }
+    if (layerCount < this.cBucketSizes[5]){ return this.cBucketSizes[4]; }
+    return 99999;
+  }
+
+  this.bucketize = function(layerCount){
+    if (layerCount < this.bucketSizes[1]){ return this.bucketSizes[0]; }
+    if (layerCount < this.bucketSizes[2]){ return this.bucketSizes[1]; }
+    if (layerCount < this.bucketSizes[3]){ return this.bucketSizes[2]; }
+    if (layerCount < this.bucketSizes[4]){ return this.bucketSizes[3]; }
+    if (layerCount < this.bucketSizes[5]){ return this.bucketSizes[4]; }
+    return 99999;
+  }
+}
+
+var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette){
+  XHR = xhr;
+  COLORS = colors_palette;
+  this.PLACES_API = places_api;
+  this.VENUES_API = venues_api;
+
+  SINGAPORE_LATLON = sg_ll;
+
+  this.SIDEBAR;
+  this.google = new L.Google('ROADMAP');
   this.bing = new L.BingLayer("AjG85RGpnN3qcJbMNxF7BWtnkq2qc_iVKntqYodZUt7n-cBTkU6qCeU47jfxJStJ");
-  //map.addLayer(bing);
   this.osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
       maxZoom: 18
-  }).addTo(this.map);
-  this.layerControl = L.control.layers({"OpenStreetMap":this.osm, "Bing":this.bing},{},{"position":"bottomleft"}).addTo(this.map);
+  });
+  this.map = L.map('map',{
+    minZoom: 11,
+    maxBounds: L.latLngBounds(L.latLng(1.21539, 103.57625), L.latLng(1.48036, 104.04866)),
+    layers: [this.google,this.bing,this.osm]
+  }).setView(SINGAPORE_LATLON, 12);
+
   this.panControl = L.control.pan().addTo(this.map);
-  this.pointLayers = {};
-  this.pointLayerGroup = L.layerGroup();
+
+  POLYLINE_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'polyline');
+  POINT_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'point');
+  PROPORTIONAL_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'proportional');
+  CHLOROPETH_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'chloropeth');
+
+  this.POLYLINE_CONTROLLER = POLYLINE_CONTROLLER;
+  this.POINT_CONTROLLER = POINT_CONTROLLER;
+  this.PROPORTIONAL_CONTROLLER = PROPORTIONAL_CONTROLLER;
+  this.CHLOROPETH_CONTROLLER = CHLOROPETH_CONTROLLER;
 
   this.initialize = function(){
-    this.loadPlanningRegions(this.XHR,this.map,this.layerControl,this.onEachRegionPopup);
+    //load regions
+    this.loadPlanningRegions(this.map,this.onEachRegionPopup);
     //init MRT polyline layer
     this.loadMRTNetwork();
-    //init point layers
-    this.map.addLayer(this.pointLayerGroup);
-    this.layerControl.addOverlay(this.pointLayerGroup,'Place points');
+  }
+
+  this.setSidebar = function(sidebar_controller){
+    this.SIDEBAR = sidebar_controller;
+  }
+
+  this.hideBingBasemap = function(){
+    this.map.removeLayer(this.bing);
+  }
+
+  this.showBingBasemap = function(){
+    this.map.addLayer(this.bing);
+  }
+
+  this.hideOSMBasemap = function(){
+    this.map.removeLayer(this.osm);
+  }
+
+  this.showOSMBasemap = function(){
+    this.map.addLayer(this.osm);
+  }
+
+  this.hideGoogleBasemap = function(){
+    this.map.removeLayer(this.google);
+  }
+
+  this.showGoogleBasemap = function(){
+    this.map.addLayer(this.google);
   }
 
   this.loadMRTNetwork = function(){
-    var LAYER_CONTROL = this.layerControl,
-    MAP = this.map;
-    this.XHR('/api/data/mrt',function(response){
+    var MAP = this.map;
+    XHR('/api/data/mrt',function(response){
       var mrt_layer = L.geoJson(JSON.parse(response),{
         onEachFeature: function(feature,layer){
           var default_style = {
@@ -136,38 +579,146 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
             layer.bindPopup('<h4>' + line_type + '<\/h4>')
           }
         }
-      }).addTo(MAP);
-      LAYER_CONTROL.addOverlay(mrt_layer,'MRT Network');
+      });
+      POLYLINE_CONTROLLER.add('mrt_network','MRT Network',mrt_layer);
     });
   }
 
-  this.loadVenuesPointLayer = function(input,results){
-    if (this.pointLayers[input]) {return;}
+  this.loadVenuesChoroplethLayer = function(input,response,color){
+    var fs_venues = response.response.venues;
+    for (var k in fs_venues) {
+      var fs_location = fs_venues[k];
+      fs_location['leaflet_ll'] = L.latLng(fs_location.location.lat,fs_location.location.lng);
+    }
+    this.getPlanningRegion(function(planning_response){
+      var planning_geojson = JSON.parse(planning_response);
+      var calculateValues = function(layerBounds){
+        var checkinsCounter = 0, usersCounter = 0, tipsCounter = 0;
+        for (var j in fs_venues) {
+          var fs_location = fs_venues[j];
+          if (layerBounds.contains(fs_location['leaflet_ll'])) {
+            checkinsCounter += fs_location.stats.checkinsCount || 0;
+            usersCounter += fs_location.stats.usersCount || 0;
+            tipsCounter += fs_location.stats.tipCount || 0;
+          }
+        }
+        return {"checkins": checkinsCounter, "users": usersCounter, "tips": tipsCounter};
+      }
+      var onEachFeatureChoropleth = function(feature,layer) {
+        var regionValues = calculateValues(layer.getBounds()),
+        regionCount = regionValues['checkins'],
+        regionUsers = regionValues['users'],
+        regionTips = regionValues['tips'];
 
-    this.pointLayers[input] = {
-      layer   : this.createVenuesPointLayer(input,results.response.venues),//generate layer here
-      tokens  : [input]
-    };
-    this.pointLayerGroup.addLayer(this.pointLayers[input]['layer']);
+        var bucketCatNo = CHLOROPETH_CONTROLLER.choroBucketize(regionCount),
+        regionOpac = CHLOROPETH_CONTROLLER.cCircleSize[bucketCatNo]['opacity'];
+
+        var defaultStyle = {
+          color: color,
+          weight: 2,
+          opacity: regionOpac,
+          fillOpacity: regionOpac,
+          fillColor: color
+        }, highlightStyle = {
+          color: color, 
+          weight: 3,
+          opacity: 0.6,
+          fillOpacity: .8,
+          fillColor: color
+        };
+        layer.setStyle(defaultStyle);
+        // does this feature have a property named popupContent?
+        if (feature.properties && feature.properties.DGPZ_NAME) {
+          (function(layer, properties) {
+            var content = '<h4>' + feature.properties.DGPZ_NAME + '<\/h4>' +
+            '<p>Road Name: ' + layer.feature.properties.DGPSZ_NAME + '<br \/>' + '<\/p>' +
+            '<p>Check ins: ' + regionCount + '<br \/>' + '<\/p>' +
+            '<p>Users: ' + regionUsers + '<br \/>' + '<\/p>' +
+            '<p>Tips given: ' + regionTips + '<br \/>' + '<\/p>';
+            
+            layer.bindPopup(content);
+            // Create a mouseover event
+            layer.on("mouseover", function (e) {
+              // Change the style to the highlighted version
+              layer.setStyle(highlightStyle);
+            });
+            // Create a mouseout event that undoes the mouseover changes
+            layer.on("mouseout", function (e) {
+              // Start by reverting the style back
+              layer.setStyle(defaultStyle); 
+            });
+            // Close the "anonymous" wrapper function, and call it while passing
+            // in the variables necessary to make the events work the way we want.
+          })(layer, feature.properties);
+        }
+      }
+      var subject_geo_layer = L.geoJson(planning_geojson,{
+        onEachFeature: onEachFeatureChoropleth
+      });
+
+      //action to add choropleth to map
+      if(CHLOROPETH_CONTROLLER.HASH[input]){return;}
+      CHLOROPETH_CONTROLLER.add(input,input,subject_geo_layer);
+      this.SIDEBAR.addChoroplethLayerSublink(input,input,'fa-th-large',color);
+    });
+  }
+
+  this.loadVenuesProportionalLayer = function(input,response,color){
+    var locationCirclesLayer = this.createVenuesProportionalLayer(response.response.venues,color);
+    if(PROPORTIONAL_CONTROLLER.HASH[input]){return;}
+    PROPORTIONAL_CONTROLLER.add(input,input,locationCirclesLayer);
+    this.SIDEBAR.addProportionalLayerSubLink(input,input,'fa-circle',color);
+    return color;
+  }
+
+  this.createVenuesProportionalLayer = function(locations,color){
+    var circles = [];
+    for (var i in locations) {
+      var venue = locations[i],
+      venueCategory = PROPORTIONAL_CONTROLLER.bucketize(venue.stats.checkinsCount),
+      venueClassInfo = PROPORTIONAL_CONTROLLER.circleSize[venueCategory];
+      var venueCircle = L.circle([venue.location.lat,venue.location.lng],venueClassInfo['size'],{
+        "fillColor":color,
+        "fillOpacity":venueClassInfo['opacity'],
+        "color":color
+      });
+      venueCircle.bindPopup(this.generateVenuePopupContent(venue));
+      circles.push(venueCircle);
+    }
+    return L.layerGroup(circles);
+  }
+
+  this.loadVenuesPointLayer = function(input,results){
+    var icon = this.VENUES_API.venues_hash[input].icon,
+    iconURL = icon.prefix + '32' + icon.suffix,
+    iconColor = COLORS.randomColor();
+    if (POINT_CONTROLLER.HASH[input]) {return;}
+    POINT_CONTROLLER.add(input,input,this.createVenuesPointLayer(input,results.response.venues,iconColor));
+    this.SIDEBAR.addPointlayerSubLink(input,input,true,undefined,iconURL,iconColor);
+    return iconColor;
   }
 
   this.loadPlacesPointLayer = function(input,token,results){
-    var pointLayerPayload = this.pointLayers[input]
-    if (pointLayerPayload) {
-      if ($.inArray(token, pointLayerPayload.tokens) > -1){
+    var pointLayerPayload = POINT_CONTROLLER.HASH[input],
+    iconURL = results[0].icon;
+    if (POINT_CONTROLLER.HASH[input]) {
+      if ($.inArray(token, POINT_CONTROLLER.HASH[input]["tokens"]) > -1){
         return;
       }else{
-        pointLayerPayload.tokens.push(token);
+        POINT_CONTROLLER.HASH[input].tokens.push(token);
         //add points to existing layer
-        this.addToPointLayer(results,this.pointLayers[input]['layer']);
+        this.addToPointLayer(results,POINT_CONTROLLER.HASH[input]['layer']);
       }
     } else { //for non-existing layer. show new
-      this.pointLayers[input] = {
-        layer   : this.createPointLayer(results),//generate layer here
-        tokens  : [token]
+      POINT_CONTROLLER.HASH[input] = {
+        "name"    : input,
+        "layer"   : this.createPointLayer(results),//generate layer here
+        "tokens"  : [token]
       };
-      this.pointLayerGroup.addLayer(this.pointLayers[input]['layer']);
+      POINT_CONTROLLER.GROUP.addLayer(POINT_CONTROLLER.HASH[input]['layer']);
+      this.SIDEBAR.addPointlayerSubLink(input,input.replace('_',' '),true,undefined,iconURL,'rgba(0,0,0,0)');
     }
+    //POINT_CONTROLLER.calibrateStats(input,POINT_CONTROLLER.HASH[input]['layer']);
   }
 
   this.createPointLayer = function(payloadGroup){
@@ -178,10 +729,10 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
     return L.layerGroup(points);
   }
 
-  this.createVenuesPointLayer = function(input,payloadGroup){
+  this.createVenuesPointLayer = function(input,payloadGroup,iconColor){
     var points = [];
     for (var i in payloadGroup) {
-      points.push(this.createVenuePointMarker(input,payloadGroup[i]));
+      points.push(this.createVenuePointMarker(input,payloadGroup[i],iconColor));
     }
     return L.layerGroup(points);
   }
@@ -216,7 +767,7 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
 
   this.createPlacePointMarker = function(payload){
     var info = this.extractPlacePointData(payload);
-    var marker = L.marker([info.lat,info.lng],{icon: this.generatePlacePointIcon(payload.icon)});
+    var marker = L.marker([info.lat,info.lng],{icon: this.generatePlacePointIcon(payload.icon,'rgba(0,0,0,0)')});
     
     var content = '<h4>' + info.name + '<\/h4>' + '<p>Address: ' + info.address + '<br \/>';
     
@@ -237,12 +788,19 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
     return marker;
   }
 
-  this.createVenuePointMarker = function(input,payload){
+  this.createVenuePointMarker = function(input,payload,iconColor){
     var info = this.extractVenuePointData(payload);
     var icon = this.VENUES_API.venues_hash[input].icon,
-    iconURL = icon.prefix + 'bg_64' + icon.suffix;
-    var marker = L.marker([info.lat,info.lng],{icon: this.generatePlacePointIcon(iconURL)});
-    
+    iconURL = icon.prefix + '32' + icon.suffix;
+    var marker = L.marker([info.lat,info.lng],{icon: this.generatePlacePointIcon(iconURL,iconColor)});
+    marker.bindPopup(this.generateVenuePopupContent(payload));
+
+    return marker;
+  }
+
+  this.generateVenuePopupContent = function(payload){
+    var info = this.extractVenuePointData(payload);
+
     var content = '<h4>' + info.name + '<\/h4>' + '<p>Address: ' + info.address + '<br \/>';
     
     if (payload.rating) {
@@ -257,15 +815,13 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
     }
 
     content += '<\/p>';
-    marker.bindPopup(content);
-
-    return marker;
+    return content;
   }
 
-  this.generatePlacePointIcon = function(iconUrl){
-    return L.icon({
-      iconUrl: iconUrl,
-      iconSize: [30, 30],
+  this.generatePlacePointIcon = function(iconUrl,iconColor){
+    return L.divIcon({
+      html: "<div class='logo' style='width:30px;height:30px;background-image: url("+iconUrl+");background-color:"+iconColor+";background-size: contain;background-repeat: no-repeat;background-position: center;'> </div>",
+      iconSize: [32, 32],
       iconAnchor: [0, 0]
       //popupAnchor: [-3, -76]
     });
@@ -308,14 +864,20 @@ var MAP_CONTROLLER = function(XHR, SINGAPORE_LATLON, PLACES_API, VENUES_API){
     }
   }
 
-  this.loadPlanningRegions = function(XHR,map,layerControl,onEachRegionPopup){
+  this.loadPlanningRegions = function(map,onEachRegionPopup){
     XHR('/api/data/planning_regions',function(response){
       var planning_geojson = JSON.parse(response);
       var planning_geo_layer = L.geoJson(planning_geojson,{
         onEachFeature: onEachRegionPopup
       });
-      layerControl.addOverlay(planning_geo_layer,'Planning Chloropeth');
+      //layerControl.addOverlay(planning_geo_layer,'Planning Chloropeth');
       var layers = planning_geo_layer.getLayers();
+    });
+  }
+
+  this.getPlanningRegion = function(callback){
+    XHR('/api/data/planning_regions',function(response){
+      callback(response);
     });
   }
 }
@@ -437,10 +999,14 @@ fake_google_map = new google.maps.Map(document.getElementById('fake_map'),{
     zoom: 15
 });
 
+var COLORS = new COLOR_PALETTE();
 var PLACES_API = new GOOGLE_PLACES(fake_google_map,fake_google_map_location);
 var VENUES_API = new FOURSQUARE_VENUES(XHR,SINGAPORE_LATLON);
-var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API);
+var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API,COLORS);
 MAP.initialize();
+var SIDEBAR = new SIDEBAR_CONTROLLER(MAP);
+SIDEBAR.initialize();
+MAP.setSidebar(SIDEBAR);
 
 var place_categories,
 venues_categories,
@@ -481,7 +1047,9 @@ var submitVenuesSearchParameters = function(){
         if (err) {
           alert('Unable to load layer. Please try again later.');
         }else{
-          MAP.loadVenuesPointLayer(input,response);
+          var groupColor = MAP.loadVenuesPointLayer(input,response);
+          MAP.loadVenuesProportionalLayer(input,response,groupColor);
+          MAP.loadVenuesChoroplethLayer(input,response,groupColor);
         }
         hideVenuesLoader();
       });

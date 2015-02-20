@@ -31,16 +31,12 @@ app.set('port', (process.env.PORT || 5000));
 app.use(bodyParser()); 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function(request, response) {
-  response.send('Hello World!');
+app.get('/',function(req,res){
+	res.render('map', { message: 'Congrats, you just set up your app!' });
 });
 
 app.get('/squarefoot', function(req, res) {
 	res.render('squarefoot', { message: 'Congrats, you just set up your app!' });
-});
-
-app.get('/maps',function(req,res){
-	res.render('map', { message: 'Congrats, you just set up your app!' });
 });
 
 app.get('/autosuggest/places',function(req,res){

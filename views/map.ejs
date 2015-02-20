@@ -37,21 +37,58 @@
 </head>
 
 <body>
-    <div id="wrapper" class="toggled">
+    <div id="wrapper" class="">
 
         <!-- Sidebar -->
-        <div id="sidebar-wrapper">
+        <div id="sidebar-wrapper" style="overflow-x: hidden;">
             <ul class="sidebar-nav">
                 <li class="sidebar-brand">
-                    <p>omg</p>
-                <li>
-                    <p>Dashboard</p>
+                    <a href="#" id="super_link_point" class="pointlayer pointlayer_selected">
+                        Point Layer(s)
+                        <i class="fa fa-map-marker"></i>
+                    </a>
                 </li>
-                <li>
-                    <p>Dashboard</p>
+                <ul id="point_layer_group">
+                    
+                </ul>
+                <li class="sidebar-brand">
+                    <a href="#" id="super_link_proportional" class="proportionallayer proportionallayer_selected">
+                        Proportional Layer(s)
+                        <i class="fa fa-circle-o"></i>
+                    </a>
                 </li>
+                <ul id="proportional_layer_group">
+                </ul>
+                <li class="sidebar-brand">
+                    <a href="#" id="super_link_choropleth" class="choroplethlayer choroplethlayer_selected">
+                        Chloropeth Layer(s)
+                        <i class="fa fa-th"></i>
+                    </a>
+                </li>
+                <ul id="choropleth_layer_group">
+                </ul>
+                <li class="sidebar-brand">
+                    <a href="#" id="super_link_polyline" class="polyline polyline_selected">
+                        Polyline Layer(s)
+                        <i class="fa fa-arrows-alt"></i>
+                    </a>
+                </li>
+                <li id="polyline_layer_group">
+                </li>
+                <li class="sidebar-brand">Base Layer</li>
                 <li>
-                    <p>Dashboard</p>
+                    <a href="#" id="base_control_osm" style="width:300px;transform:translate(-25px,0px)" class="selected">
+                        <i id="base_control_icon_osm" class="fa fa-openid fa-2x base_control_osm_icon_selected"></i>
+                        Open Street Maps
+                    </a>
+                    <a href="#" id="base_control_bing">
+                        <i id="base_control_icon_bing" class="base_control_bing_icon"></i>
+                        Bing Maps (Satellite)
+                    </a>
+                    <a href="#" id="base_control_google" style="transform: translate(-20px,0px);width:300px;">
+                        <i id="base_control_icon_google" class="fa fa-google fa-2x base_control_google_icon" style="transform:translate(0px,8px)"></i>
+                        Google Maps
+                    </a>
                 </li>
             </ul>
         </div>
@@ -80,7 +117,9 @@
                     <div id="taskbar">
                         <a id="taskbar_places_search" class="tooltips" href="#"><i id="taskbar_search_icon" class="fa fa-google fa-4x" style=""></i><span>Places Search (Hotkey: 1)</span></a>
                         <a id="taskbar_venues_search" class="tooltips" href="#"><i id="taskbar_venues_icon" class="fa fa-foursquare fa-4x" style=""></i><span>Venues Search (Hotkey: 2)</span></a>
-                    <div>
+                    </div>
+                    <div id="legend"></div>
+                    <div id="region_legend"></div>
                 </div>
             </div>
         </div>
@@ -101,6 +140,9 @@
     <script src="js/tiles/Bing.js"></script>
 
     <script src="js/vendor/L.Control.Pan.js"></script>
+    <script src="js/vendor/Google.js"></script>
+
+
 
     <!-- Typeahead -->
     <script src="js/vendor/typeahead/typeahead.jquery.min.js"></script>
