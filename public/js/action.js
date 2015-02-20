@@ -368,8 +368,8 @@ var SUBGROUP_MAP_CONTROLLER = function(map,type){
     500:{'opacity':.35},
     1000:{'opacity':.5},
     2000:{'opacity':.7},
-    10000:{'opacity':.9},
-    99999:{'opacity':1}
+    10000:{'opacity':.8},
+    99999:{'opacity':.9}
   }
   this.circleSize = {
     0:{'size':50,'opacity':1},
