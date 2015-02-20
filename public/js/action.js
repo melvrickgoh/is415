@@ -198,10 +198,12 @@ var SIDEBAR_CONTROLLER = function(MAP_CONTROLLER){
       MAP.CHLOROPETH_CONTROLLER.hideAll();
       deactivateSublinks(CHOROPLETH_LINKS,'choroplethlayer_selected');
       CHOROPLETH_MASTER_LINK.removeClass('choroplethlayer_selected');
+      $('#region_legend').css('visibility','hidden');
     } else {
       MAP.CHLOROPETH_CONTROLLER.showAll();
       reinstateSublinks(CHOROPLETH_LINKS,'choroplethlayer_selected');
       CHOROPLETH_MASTER_LINK.addClass('choroplethlayer_selected');
+      $('#region_legend').css('visibility','visible');
     }
   }
 
@@ -222,12 +224,10 @@ var SIDEBAR_CONTROLLER = function(MAP_CONTROLLER){
       MAP.POINT_CONTROLLER.hideAll();
       deactivateSublinks(POINTLAYER_LINKS,'pointlayer_selected');
       POINTLAYER_MASTER_LINK.removeClass('pointlayer_selected');
-      $('#region_legend').css('visibility','hidden');
     } else {
       MAP.POINT_CONTROLLER.showAll();
       reinstateSublinks(POINTLAYER_LINKS,'pointlayer_selected');
       POINTLAYER_MASTER_LINK.addClass('pointlayer_selected');
-      $('#region_legend').css('visibility','visible');
     }
   }
 
