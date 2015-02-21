@@ -49,7 +49,7 @@ app.get('/api/venues_search',function(req,res){
 	//check cache for results
 	cache.cacheRequest(searchURL,function(isCached,result){
 		if (isCached) {		//is cached: use cache result
-			console.log(result);
+			console.log(result)
 			console.log(result.value);
 			res.send(result);
 		}else{						//not cached so find more

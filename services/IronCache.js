@@ -28,7 +28,7 @@ function _get(key,callback){
 	CLIENT.get(CACHE_NAME, key,callback);
 }
 
-IronCache.prototype.put = function(key,value,callbak){
+IronCache.prototype.put = function(key,value,callback){
 	CLIENT.put(CACHE_NAME, key, { value: value }, callback);
 }
 

@@ -465,6 +465,7 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
   }).setView(SINGAPORE_LATLON, 12);
 
   this.panControl = L.control.pan().addTo(this.map);
+  this.scaleControl = L.control.scale({"position":"topright"}).addTo(this.map);
 
   POLYLINE_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'polyline');
   POINT_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'point');
