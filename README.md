@@ -2,6 +2,9 @@
 
 Node.js app using [Express 4](http://expressjs.com/).
 
+Staging: geospatial-melvrick.herokuapp.com
+Deployment: spatia.herokuapp.com
+
 ## Running Locally
 
 Make sure you have [Node.js](http://nodejs.org/) and the [Heroku Toolbelt](https://toolbelt.heroku.com/) installed.
@@ -18,9 +21,9 @@ Next, contact me for the credentials required for the different APIs. Once that'
 Branching helps us to manage integrations especially since we're working on the same codebase
 
 ### Create a new branch
-Create a new branch and codebase for your own use. "-b" indicates a new branch. Example:
+Create a new branch and codebase for your own use. "-b" indicates a new branch. "master" is the branch from which to replicate the codebase. Example:
 ```
-git checkout -b feature/new_feature_branch_name
+git checkout -b feature/new_feature_branch_name master
 ```
 
 ### Checkout/Switch between branches
@@ -43,6 +46,15 @@ git merge origin/master
 ```
 4. Make a pull request on [Github Pull Request](https://github.com/melvrickgoh/is415/pulls)
 5. One of us collaborators will do a quick code review before sending it to our deployed server
+
+### Useful: See the branch you're on
+Show the branches available and the one you're on
+```
+git branch
+
+* feature/google_integration
+  master
+```
 
 ### Useful: See branch commit details
 ```
