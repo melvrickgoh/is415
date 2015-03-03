@@ -18,7 +18,7 @@ var LOCAL_URL = 'http://localhost:5000/',
 REMOTE_URL = 'http://spatia.herokuapp.com/',
 REDIRECT_URL = LOCAL_URL + 'oauth2callback';
 
-var CLIENT_DEFAULT_TOOLKIT_FOLDER_NAME = "spatia/ocr_demo"
+var CLIENT_DEFAULT_TOOLKIT_FOLDER_NAME = "spatia/files"
 
 function GoogleServices(options){}
 
