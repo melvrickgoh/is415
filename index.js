@@ -3,6 +3,9 @@ var app = express();
 var bodyParser = require('body-parser');
 var fs = require('fs');
 
+var dotenv = require('dotenv');
+dotenv.load();
+
 var StaticData = require('./server/static_data');
 var StaticSpatial = new StaticData();
 
