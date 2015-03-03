@@ -1,7 +1,7 @@
 var ironcache = require('iron-cache');
-var IRON_CACHE_PROJECT = process.env.IRON_CACHE_PROJECT_ID || '54dd67f6afc2630006000124',
-IRON_CACHE_TOKEN = process.env.IRON_CACHE_TOKEN || 'QOfGHSVCGTNQOamsxZuaJaBF44E',
-CACHE_NAME = process.env.IRON_CACHE_NAME || 'geospatial-melvrick';
+var IRON_CACHE_PROJECT = process.env.IRON_CACHE_PROJECT_ID,
+IRON_CACHE_TOKEN = process.env.IRON_CACHE_TOKEN,
+CACHE_NAME = process.env.IRON_CACHE_NAME;
 
 // Pass an options object.
 var CLIENT = ironcache.createClient({ project: IRON_CACHE_PROJECT, token: IRON_CACHE_TOKEN });
