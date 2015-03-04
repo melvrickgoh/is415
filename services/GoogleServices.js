@@ -16,7 +16,7 @@ var OAuth2 = googleapis.auth.OAuth2;
 
 var LOCAL_URL = 'http://localhost:5000/',
 REMOTE_URL = 'http://spatia.herokuapp.com/',
-REDIRECT_URL = LOCAL_URL + 'oauth2callback';
+REDIRECT_URL = REMOTE_URL + 'oauth2callback';
 
 var CLIENT_DEFAULT_TOOLKIT_FOLDER_NAME = "spatia/files"
 
