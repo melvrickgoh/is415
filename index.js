@@ -241,6 +241,16 @@ main_router.route('/api/places_search')
 		});
 	});
 
+main_router.route('/api/places_text_search')
+	.all(function(req,res){
+		var text_query = req.query.text,
+		searchURL = req.originalUrl;
+
+		cache.cacheRequest(searchURL,function(isCached,result){
+
+		});
+	});
+
 main_router.route('/api/foursquare/categories')
 	.all(function(req,res){
 		FoursquareVenuesAdapter.categories(function(err,results){
@@ -266,8 +276,6 @@ main_router.route('/api/foursquare/custom_categories')
 main_router.route('/api/data/sg_area_topo')
 	.all(function(req,res){
 		sg_area_topo = StaticSpatial.sg_region_topo();
-		console.log(sg_area_topo.objects.type);
-		console.log(sg_area_topo.objects.MP14_REGION_WEB_PL.geometries.length);
 		res.send(sg_area_topo);
 	});
 
@@ -295,7 +303,7 @@ main_router.route('/api/iron/get')
 	});
 
 //main_router.route()
-//.all();
+//.all(); 
 
 app.use('/', main_router);
 
@@ -309,7 +317,6 @@ function _restrict(req, res, next, targetLocale) {
   } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
     req.session.error = 'Access denied!';
     req.flash('target_locale',targetLocale);
-    console.log(targetLocale);
     res.redirect('/login');                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
   }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 }

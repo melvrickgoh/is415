@@ -12,7 +12,16 @@ function PlacesController (googleapis,googleplaces,foursquarevenues) {
 PlacesController.prototype.searchPlaces = function(type,callback){
 	GooglePlaces.search({
 		location	: SINGAPORE_LATLON,
-		types			: type
+		types			: type,
+		radius 		: 25000.
+	},callback);
+}
+
+PlacesController.prototype.textSearchPlaces = function(query,callback){
+	GooglePlaces.textSearch({
+		query 		: query,
+		location	: SINGAPORE_LATLON,
+		radius 		: 25000
 	},callback);
 }
 

@@ -97,7 +97,7 @@
     height: 700px;
 }
 
-#search_amenities, #search_foursquare {
+#search_amenities, #search_foursquare, #search_text {
     width: 100%;
     height: 50px;
     position: relative;
@@ -172,7 +172,7 @@
     padding: 0px 0px 0px 0px;
 }
 
-#search_places_container, #search_venues_container {
+#search_places_container, #search_venues_container, #search_text_container {
     height: 50px;
     width: 50%;
     position: absolute;
@@ -195,11 +195,11 @@
     z-index: 1000;
 }
 
-#taskbar_places_search {
+#taskbar_text_search_icon {
     position: absolute;
     left: 100px;
     transform: translate(-25px, 0);
-    bottom: 10px;
+    bottom: -25px;
 }
 
 #taskbar_venues_search {
@@ -209,11 +209,18 @@
     bottom: 10px;
 }
 
-#taskbar_search_icon {
+#taskbar_places_search {
+    position: absolute;
+    right: 50%;
+    transform: translate(25px, 0);
+    bottom: 10px;
+}
+
+#taskbar_search_icon, #taskbar_text_search_icon {
     color: rgba(250,70,0,0.7);
 }
 
-#taskbar_search_icon:hover {
+#taskbar_search_icon:hover, #taskbar_text_search_icon:hover {
     color: rgba(250,70,0,1);
 }
 

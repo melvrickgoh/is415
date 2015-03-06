@@ -112,7 +112,7 @@ GoogleUsersDAO.prototype.checkUserExists = function(user,callback){
 	var selectUserDetails = {
 		name:TABLENAME,
 		distinct:false,
-		attributes:[GOOGLE_ID,TOOLKIT_FOLDER_ID],
+		attributes:[GOOGLE_ID],
 		conditions:[GOOGLE_ID + ' = \''+ user.id +'\'']
 	};
 	dao.select(selectUserDetails,function(isSuccess,result){
