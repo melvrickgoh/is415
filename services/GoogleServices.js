@@ -83,7 +83,6 @@ GoogleServices.prototype.getUserAndDriveProfile = function(code,callback){
 	getAccessToken(code,function(oauth2Client,tokens){
   	_executeCommand(oauth2Client,function(client,oauth2Client){
   		_getUserProfile(client,oauth2Client,'me',function(err,results){
-  			console.log(results);
   			callback('profile',err,results,tokens,oauth2Client,client);
 
   		});
@@ -107,7 +106,6 @@ GoogleServices.prototype.searchPlaces = function(searchType,locaiton,callback){
 	    return;
 	  }
 	  // Make an authorized request to patch file title.
-	  console.log(client);
 
 	  /*client.places.files.patch({
 	  	fileId:fileID,
