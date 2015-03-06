@@ -14,9 +14,7 @@ var CLIENT_SECRET = process.env.GOOGLE_BROWSER_CLIENT_SECRET;
 //For Client Side logging in
 var OAuth2 = googleapis.auth.OAuth2;
 
-var LOCAL_URL = 'http://localhost:5000/',
-REMOTE_URL = 'http://spatia.herokuapp.com/',
-REDIRECT_URL = LOCAL_URL + 'oauth2callback';
+var REDIRECT_URL = _determineGoogleCallbackType();
 
 var CLIENT_DEFAULT_TOOLKIT_FOLDER_NAME = "spatia/files"
 
@@ -222,6 +220,17 @@ function getAccessToken(code, callback) {
 
    		callback(oauth2Client,tokens);
  	});
+}
+
+function _determineGoogleCallbackType(){
+	switch (process.env.DEPLOYMENT_TYPE) {
+		case "staging":
+			return "http://geospatial-melvrick.herokuapp.com/oauth2callback";
+		case "production":
+			return "http://spatia.herokuapp.com/oauth2callback";
+		default:
+			return "http://localhost:5000/oauth2callback"
+	}
 }
 
 module.exports = GoogleServices;
