@@ -28,7 +28,8 @@ var COLOR_PALETTE = function() {
   }
 }
 
-var GOOGLE_PLACES = function (map,base_location){
+var GOOGLE_PLACES = function (XHR,map,base_location){
+  this.XHR = XHR;
   this.API_KEY = 'AIzaSyBF9YdzEWQUMpYLLVkRu_UXDahy2UOCDmw';
   this.map = map;
   this.map_location = base_location;
@@ -38,7 +39,7 @@ var GOOGLE_PLACES = function (map,base_location){
   this.singaporePlacesSearch = function(type,callback){
     this.service.nearbySearch({
       location: this.map_location,
-      radius: '50000',
+      radius: '25000',
       types: [type],
       key: this.API_KEY
     },callback);
@@ -1001,7 +1002,7 @@ fake_google_map = new google.maps.Map(document.getElementById('fake_map'),{
 });
 
 var COLORS = new COLOR_PALETTE();
-var PLACES_API = new GOOGLE_PLACES(fake_google_map,fake_google_map_location);
+var PLACES_API = new GOOGLE_PLACES(XHR,fake_google_map,fake_google_map_location);
 var VENUES_API = new FOURSQUARE_VENUES(XHR,SINGAPORE_LATLON);
 var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API,COLORS);
 MAP.initialize();
