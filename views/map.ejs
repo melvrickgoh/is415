@@ -32,7 +32,16 @@
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		
     <![endif]-->
+	
+	<script>
+	window.onload = function(){
+		document.getElementById('user-uploaded').innerHTML = '<ol><li>html data</li></ol>';
+	
+	
+	};
+	</script>
 
 </head>
 
@@ -80,7 +89,7 @@
                     <a href="#" id="base_control_osm" style="width:300px;transform:translate(-25px,0px)" class="selected">
                         <i id="base_control_icon_osm" class="fa fa-openid fa-2x base_control_osm_icon_selected"></i>
                         Open Street Maps
-                    </a>
+                    </a> 
                     <a href="#" id="base_control_bing">
                         <i id="base_control_icon_bing" class="base_control_bing_icon"></i>
                         Bing Maps (Satellite)
@@ -90,6 +99,26 @@
                         Google Maps
                     </a>
                 </li>
+				
+				
+				<a id="user-uploaded">
+				</a>
+				
+				<li class="sidebar-brand">Upload File</li>
+                <li><!--File upload test code-->
+				
+				<form method='post' action='/upload/geoJSON' enctype="multipart/form-data">
+				<input type='file' name='fileUploaded'>
+				<input type='submit'>
+				</li>
+				
+				
+				
+				
+				
+				
+				
+				
             </ul>
         </div>
         <!-- /#sidebar-wrapper -->

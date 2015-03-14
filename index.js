@@ -40,6 +40,56 @@ var PlacesController = new places_controller(GoogleAPIs,GooglePlacesAdapter,Four
 
 var SQUARE_FOOT_KEY = process.env.SQUARE_FOOT_KEY;
 
+
+var geojsonhint = require('geojsonhint');
+
+//upload start
+var multer      =    require('multer');
+var app         =    express();
+var done        =    false;
+
+app.use(multer({ dest: './uploads/',
+ rename: function (fieldname, filename) {
+    return filename+Date.now();
+  },
+onFileUploadStart: function (file) {
+	/**
+	//check for geojson
+	var jsonExtension = file.originalname.spilt(".");
+	if(jsonExtension[1].toLowerCase() == "json") {
+	  console.log(file.originalname + ' is starting ...')
+	} else {
+		return false;
+	
+	}**/
+},
+onFileUploadComplete: function (file) {
+  var errors =	geojsonhint.hint(file).message
+  console.log(file	.fieldname + ' uploaded to  ' + file.path + ' geojson file errors: ' + errors)
+  done=true;
+}
+}));
+
+app.post('/upload/geoJSON',function(req,res){
+  if(done==true){
+    //console.log(req.files);
+	backURL=req.header('Referer') || '/';
+	//console.log(req.files.fileUploaded.name.split("."));
+	var filename=req.files.fileUploaded.name.split(".");
+	backURL.concat(filename[0]);
+	console.log(backURL+filename[0]);
+	res.redirect(backURL+'?userfilepresent=true&userfile='+filename[0]);
+  }
+});
+ 
+app.listen(3000,function(){
+    console.log("Working on port 3000");
+});
+//upload end
+
+
+
+
 app.set('views', 'views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');
 app.set('port', (process.env.PORT || 5000));
@@ -282,7 +332,13 @@ main_router.route('/api/data/mrt')
 		mrt_geojson = StaticSpatial.sg_mrt_geo();
 		res.send(mrt_geojson);
 	});
-
+/**
+main_router.route('/api/data/mrt')
+	.all(function(req,res){
+		mrt_geojson = StaticSpatial.sg_mrt_geo();
+		res.send(mrt_geojson);
+	});
+**/
 main_router.route('/api/iron/get')
 	.all(function(req,res){
 		cache.get(req.query.key,function(err,response){
