@@ -9,28 +9,20 @@ pg = require('pg.js'),
 session = require('express-session'),
 flash = require('connect-flash'),//allowing the flashing 
 errorHandler = require('errorhandler'),
-pgDAO = require('./server/dao/index');
+pgDAO = require('./server/dao/index'),
+serviceMaster = require('./services/ServiceMaster');
 
 var dotenv = require('dotenv');
 dotenv.load();
 
-var StaticData = require('./server/static_data');
-var StaticSpatial = new StaticData();
-
-var GoogleServices = require('./services/GoogleServices');
-var GoogleAPIs = new GoogleServices();
-
-var Google_Places_Interface = require('./services/GooglePlaces');
-var GooglePlacesAdapter = new Google_Places_Interface();
-
-var IronCache = require('./services/IronCache');
-var cache = new IronCache();
-
-var Foursquare_Venues_Interface = require('./services/FoursquareVenues');
-var FoursquareVenuesAdapter = new Foursquare_Venues_Interface();
-
-var UUIDGeneratorService = require('./services/UUIDGenerator');
-var UUIDGenerator = new UUIDGeneratorService();
+var ServiceMaster = new serviceMaster();
+var StaticSpatial = ServiceMaster.StaticSpatial;
+var GoogleAPIs = ServiceMaster.GoogleAPIs;
+var GooglePlacesAdapter = ServiceMaster.GooglePlacesAdapter;
+var cache = ServiceMaster.IronCache;
+var FoursquareVenuesAdapter = ServiceMaster.FoursquareVenuesAdapter;
+var UUIDGenerator = ServiceMaster.UUIDGenerator;
+var S3 = ServiceMaster.S3;
 
 var UserController = require('./server/controller/UserController'),
 uController = new UserController({pgURL:process.env.PG_DB_URL});
