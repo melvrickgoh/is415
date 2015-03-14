@@ -29,6 +29,9 @@ var cache = new IronCache();
 var Foursquare_Venues_Interface = require('./services/FoursquareVenues');
 var FoursquareVenuesAdapter = new Foursquare_Venues_Interface();
 
+var UUIDGeneratorService = require('./services/UUIDGenerator');
+var UUIDGenerator = new UUIDGeneratorService();
+
 var UserController = require('./server/controller/UserController'),
 uController = new UserController({pgURL:process.env.PG_DB_URL});
 User = require('./server/entity/user'),
