@@ -1,18 +1,15 @@
-var GoogleUsersDAO = require('../dao/GoogleUsersDAO');
 var dao;
 
 var User = require('../entity/user');
 
 function UserController(options){
 	if(options){
-		dao = new GoogleUsersDAO({pgURL:options.pgURL});
+		dao = options.GoogleUsersDAO;
 	}
 }
 
 UserController.prototype.processGoogleLogin = function(user,callback){
 	//If user exists, update the logtime, else insert new user into db
-	console.log(user.id);
-	console.log(user.ocrFolder);
 	dao.checkUserExists(user,function(exists){
 		console.log('user exists > ' + exists);
 		if (exists){

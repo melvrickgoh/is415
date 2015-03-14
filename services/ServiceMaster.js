@@ -1,4 +1,4 @@
-var dotenv = require('dotenv');
+const dotenv = require('dotenv');
 dotenv.load();
 
 var StaticData = require('../server/static_data');
@@ -22,6 +22,9 @@ var UUIDGenerator = new UUIDGeneratorService();
 var S3Services = require('./S3Services');
 var S3 = new S3Services();
 
+var SessionServices = require('./SessionServices');
+var SessionService = new SessionServices();
+
 function ServiceMaster(){}
 
 ServiceMaster.prototype.constructor = ServiceMaster;
@@ -33,5 +36,6 @@ ServiceMaster.prototype.IronCache = cache;
 ServiceMaster.prototype.GooglePlacesAdapter = GooglePlacesAdapter;
 ServiceMaster.prototype.GoogleAPIs = GoogleAPIs;
 ServiceMaster.prototype.StaticSpatial = StaticSpatial;
+ServiceMaster.prototype.SessionServices = SessionService;
 
 module.exports = ServiceMaster;
