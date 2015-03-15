@@ -52,7 +52,7 @@ S3FilesDAO.prototype.updateFileRecord = function(file,callback){
 }
 
 S3FilesDAO.prototype.insertNewFileRecord = function(file,callback){
-	this.insertNewFileRecords([files],callback);
+	this.insertNewFileRecords([file],callback);
 }
 
 S3FilesDAO.prototype.insertNewFileRecords = function(files,callback){

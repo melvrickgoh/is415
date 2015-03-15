@@ -10,7 +10,7 @@ function GeoUploadController(options){
 
 GeoUploadController.prototype.uploadToS3 = function(fileData,userGoogleID,callback){
 	var fileUUID = uuidGenerator.generate();
-	s3Services.upload(fileUUID,fileData.fileName,function(success,publicEndpoint,errStack){
+	s3Services.upload(fileUUID,fileData.layerFileName,function(success,publicEndpoint,errStack){
 		if (!success) {
 			callback(false,{
 				error: true,

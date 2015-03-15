@@ -11,29 +11,6 @@ var client = S3.createClient({
 
 var bucket = process.env.AWS_S3_BUCKET_NAME;
 
-var sample = {
-    "glossary": {
-        "title": "example glossary",
-		"GlossDiv": {
-            "title": "S",
-			"GlossList": {
-                "GlossEntry": {
-                    "ID": "SGML",
-					"SortAs": "SGML",
-					"GlossTerm": "Standard Generalized Markup Language",
-					"Acronym": "SGML",
-					"Abbrev": "ISO 8879:1986",
-					"GlossDef": {
-                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
-						"GlossSeeAlso": ["GML", "XML"]
-                    },
-					"GlossSee": "markup"
-                }
-            }
-        }
-    }
-}
-
 function S3Services(){}
 
 S3Services.prototype.constructor = S3Services;
@@ -56,7 +33,7 @@ S3Services.prototype.upload = function(uuid,filename,callback){
 	};
 	var uploader = client.uploadFile(params);
 	uploader.on('error', function(err) {
-	  console.error("unable to upload:", err.stack);
+	  //console.error("unable to upload:", err.stack);
 	  callback(false,'unable to upload to S3',err);
 	});
 	uploader.on('progress', function() {
@@ -64,13 +41,19 @@ S3Services.prototype.upload = function(uuid,filename,callback){
 	            uploader.progressAmount, uploader.progressTotal);
 	});
 	uploader.on('end', function() {
-	  console.log("done uploading");
-	  callback(true,this.publicURL(uuid+".json"));
+	  //console.log("done uploading");
+	  callback(true,"https://s3-ap-southeast-1.amazonaws.com/spatia/"+uuid+".json");
 	});
 }
 
 S3Services.prototype.publicURL = function(key){
 	return S3.getPublicUrlHttp(bucket, key);
 }
+
+function _publicURL(key){
+	return S3.getPublicUrlHttp(bucket, key);
+}
+
+S3 = S3Services;
 
 module.exports = S3Services;

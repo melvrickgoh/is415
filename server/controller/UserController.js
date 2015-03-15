@@ -1,4 +1,4 @@
-var dao;
+var dao, S3FilesDAO, S3Services;
 
 var User = require('../entity/user');
 
@@ -22,6 +22,17 @@ UserController.prototype.processGoogleLogin = function(user,callback){
 				callback('Insert User',isSuccess,result);//to be updated on the dao being updated
 			});
 			return;
+		}
+	});
+}
+
+UserController.prototype.retrieveAWSGeoData = function(user,callback){
+	var endpoint = S3Services.endpoint;
+	S3FilesDAO.getUserFileRecords(user.id,function(isSuccess,results){
+		if (isSuccess) {
+			callback(true,results);
+		}else{
+			callback(false);
 		}
 	});
 }
