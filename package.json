@@ -27,7 +27,9 @@
     "googleplaces": "0.4.0",
     "iron-cache"  : "0.2.2",
     "node-foursquare-venues" : "1.1.0",
-    "dotenv": "0.5.1"
+    "dotenv": "0.5.1",
+    "node-uuid": "1.4.3",
+    "s3":"4.4.0"
   },
   "engines": {
     "node": "0.10.x"
