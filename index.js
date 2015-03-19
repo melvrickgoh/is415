@@ -197,30 +197,6 @@ main_router.route('/autosuggest/places')
 		res.send(GoogleAPIs.autosuggestPlaces());
 	});
 
-main_router.route('/api/venues_search')
-	.all(function(req,res){
-		var venue_id = req.query.id,
-		searchURL = req.originalUrl;
-		//check cache for results
-		cache.cacheRequest(searchURL,function(isCached,result){
-			if (isCached) {		//is cached: use cache result
-				console.log(result)
-				console.log(result.value);
-				res.send(result);
-			}else{						//not cached so find more
-				PlacesController.searchVenues(venue_id,function(err,response){
-					console.log(err);
-					console.log(response);
-					if (err) {
-						res.send({"error":true});
-					}else{
-						res.send(response);
-					}
-				});
-			}
-		});
-	});
-
 main_router.route('/api/places_search')
 	.all(function(req,res){
 		var place_category = req.query.place,
@@ -269,6 +245,54 @@ main_router.route('/api/foursquare/custom_categories')
 				res.send({"error":true});
 			}else{
 				res.send(results);
+			}
+		});
+	});
+
+main_router.route('/api/foursquare/venues_search')
+	.all(function(req,res){
+		var venue_id = req.query.id,
+		searchURL = req.originalUrl;
+		//check cache for results
+		cache.cacheRequest(searchURL,function(isCached,result){
+			if (isCached) {		//is cached: use cache result
+				console.log(result)
+				console.log(result.value);
+				res.send(result);
+			}else{						//not cached so find more
+				PlacesController.searchVenues(venue_id,function(err,response){
+					console.log(err);
+					console.log(response);
+					if (err) {
+						res.send({"error":true});
+					}else{
+						res.send(response);
+					}
+				});
+			}
+		});
+	});
+
+main_router.route('/api/foursquare/text_search')
+	.all(function(req,res){
+		var venue_term = req.query.search,
+		searchURL = req.originalUrl;
+		//check cache for results
+		cache.cacheRequest(searchURL,function(isCached,result){
+			if (isCached) {		//is cached: use cache result
+				console.log(result)
+				console.log(result.value);
+				res.send(result);
+			}else{						//not cached so find more
+				PlacesController.textSearchVenues(venue_term,function(err,response){
+					console.log(err);
+					console.log(response);
+					if (err) {
+						res.send({"error":true});
+					}else{
+						res.send(response);
+					}
+				});
 			}
 		});
 	});

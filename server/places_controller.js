@@ -29,6 +29,10 @@ PlacesController.prototype.searchVenues = function(id,callback){
 	FoursquareVenues.search(id,callback);
 }
 
+PlacesController.prototype.textSearchVenues = function(id,callback){
+	FoursquareVenues.text_search(id,callback);
+}
+
 PlacesController.prototype.constructor = PlacesController;
 
 module.exports = PlacesController;
