@@ -23,6 +23,16 @@ SessionServices.prototype.loadUser = function(results,loggedInUser,tokens,oauth2
 	return loggedInUser;
 }
 
+SessionServices.prototype.loadSpreadsheets = function(files,spreadsheets,dataFolderId){
+	for (var i in files) {
+		file = files[i];
+		if (file.parents && file.parents[0]  && file.parents[0]['id'] == dataFolderId){
+			spreadsheets.push(file);
+		}
+	}
+	return spreadsheets;
+}
+
 SessionServices.prototype.loadFiles = function(files,results){
 	for (var i in results){
 		var fileObj = results[i];

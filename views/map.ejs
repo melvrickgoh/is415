@@ -9,7 +9,10 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Geospatial Assignment 1</title>
+    <title>Spatia</title>
+
+    <!-- Fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>    
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.css" rel="stylesheet">
@@ -132,6 +135,30 @@
         </div>
         <!-- /#page-content-wrapper -->
 
+        <div id="spreadsheets-overlay" class="closed">
+            <div class="icon-bar">
+                <i class="fa fa-table fa-3x"></i>
+            </div>
+            <div class="container-fluid">
+                <div class="row nil-message hide">
+                    <h2>You currently do not have any files</h2>
+                    <p>Start using our application to gain access to data!</p>
+                </div>
+                <div class="row sheets hide">
+                    <div class="sheet-control col-sm-3 col-md-3 col-lg-2">
+                        <h4>Data Layers</h4>
+                    </div>
+                    <div class="sheet-content col-sm-9 col-md-9 col-lg-10">
+                        <div class="active-sheet row">
+                            <iframe></iframe>
+                        </div>
+                        <div class="active-taskbar row"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
     </div>
     <!-- /#wrapper -->
 
@@ -163,6 +190,7 @@
     <script type="js/google_places.js"></script>
     <!-- Menu Toggle Script -->
     <script src="js/action.js"></script>
+    <script src="js/spreadsheets.js"></script>
 
 </body>
 

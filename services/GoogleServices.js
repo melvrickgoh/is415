@@ -160,6 +160,14 @@ function _processAndCheckSpatialToolkitFolder(results,callback,client,oauth2Clie
 	});
 }
 
+function _processSpatialToolkitSpreadsheets(results,callback,client,oauth2Client,tokens){
+
+}
+
+function _getSpatialToolkitSpreadsheets(client, authClient, userId, callback){
+	
+}
+
 function _createClientSpatialToolkitFolder(client, authClient, userId, callback){
 	client.drive.files.insert({
 		resource:{
@@ -181,18 +189,18 @@ function _getDriveProfile(client, authClient, userId, callback){
 	client.drive.files.list({ auth: authClient }, callback);
 }
 
-function _getClientFolders(client, authClient, userId, callback){
-	client.drive.files.list({
-    q: "mimeType = 'application/vnd.google-apps.folder'",
-    auth: authClient
-  },callback);
-}
-
 function _renewClientOAuth2(tokens){
 	var OAuth2 = googleapis.auth.OAuth2;
 	oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 	oauth2Client.setCredentials(tokens);
 	return oauth2Client;
+}
+
+function _getClientFolders(client, authClient, userId, callback){
+	client.drive.files.list({
+    q: "mimeType = 'application/vnd.google-apps.folder'",
+    auth: authClient
+  },callback);
 }
 
 function _executeCommand(oauth2Client,callback){

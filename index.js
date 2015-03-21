@@ -77,6 +77,13 @@ main_router.route('/secure_map')
 		},'secure_map');
 	});
 
+main_router.route('/api/user/spreadsheets_meta')
+	.all(function(req,res){
+		_restrict(req,res,function(user){
+			res.json(req.session.user.data_spreadsheets);
+		},'/api/user/spreadsheets_meta');
+	});
+
 main_router.route('/login')
 	.all(function(req,res){
 		GoogleAPIs.login(res);
@@ -88,7 +95,8 @@ main_router.route('/oauth2callback')
 
 		var returnCounter = 0;
 		var loggedInUser = new User({}),
-		files = [];
+		files = [],
+		data_spreadsheets = [];
 
 		GoogleAPIs.getUserAndDriveProfile(code,function(resultType,err,results,tokens,oauth2Client,client) {
 	      if (err) {
@@ -112,6 +120,10 @@ main_router.route('/oauth2callback')
 
 	      	if (returnCounter == 3){//assign to the user the files at the end of the second callback
 	      		loggedInUser.files = files;
+
+	      		SessionServices.loadSpreadsheets(files,data_spreadsheets,loggedInUser.ocrFolder.id);
+
+	      		loggedInUser.data_spreadsheets = data_spreadsheets;
 	      		req.session.user = loggedInUser; //set the session to that of this user
 	      		req.flash('user',loggedInUser);
 
