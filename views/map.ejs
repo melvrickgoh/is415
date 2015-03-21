@@ -40,6 +40,11 @@
 </head>
 
 <body>
+    <div id="loading" class="hide">
+        <i class="fa fa-refresh fa-5x fa-spin loading-icon text-center"></i>
+        <h2 class="loading-message text-center">Spinning up the hamster...</h2>
+    </div>
+
     <div id="wrapper" class="">
 
         <!-- Sidebar -->
@@ -152,7 +157,11 @@
                         <div class="active-sheet row">
                             <iframe></iframe>
                         </div>
-                        <div class="active-taskbar row"></div>
+                        <div class="active-taskbar row">
+                            <button type="button" class="btn btn-load-data pull-right">Load Layers</button>
+                            <button type="button" class="btn btn-unload-data pull-right hide">Unload Layers</button>
+                            <button type="button" class="btn btn-refresh pull-right">Refresh Data</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -191,6 +200,7 @@
     <!-- Menu Toggle Script -->
     <script src="js/action.js"></script>
     <script src="js/spreadsheets.js"></script>
+    <script src="js/overlay.js"></script>
 
 </body>
 

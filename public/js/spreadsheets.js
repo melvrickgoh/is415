@@ -9,6 +9,11 @@ function Spreadsheets () {
 
   this.active_container = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-sheet')
   this.active_spreadsheet = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-sheet > iframe');
+  
+  this.active_layer_refresh_button = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-taskbar > .btn-refresh');
+  this.active_layer_load_data_button = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-taskbar > .btn-load-data');
+  this.active_layer_unload_data_button = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-taskbar > .btn-unload-data');
+  this.active_layer_name;
   //initialize values
   this.overlay_toggle.click(this.toggleOverlay);
 }
@@ -89,7 +94,7 @@ Spreadsheets.prototype.initialize = function(){
 
 Spreadsheets.prototype.initializeSheetContainer = function(spreadsheets){
 	//Set active content region
-	SPREADSHEETS.active_container.height(window.innerHeight - 75);
+	SPREADSHEETS.active_container.height(window.innerHeight - 50);
 
 	SPREADSHEETS.generateNewSheetControls(spreadsheets);
 
@@ -112,19 +117,26 @@ Spreadsheets.prototype.generateNewSheetControl = function(sheetId,sheetTitle,she
 		.click(function(e){
 			$('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > div.selected').removeClass('selected');
 			$(e.target).addClass('selected');
-			SPREADSHEETS.activateSpreadsheet(sheetLink);
+			SPREADSHEETS.activateSpreadsheet(sheetId,sheetLink);
 		})
 		.html(sheetTitle)
 		.appendTo(SPREADSHEETS.spreadsheet_control);
 }
 
-Spreadsheets.prototype.activateSpreadsheet = function(sheetLink) {
+Spreadsheets.prototype.activateSpreadsheet = function(sheetId,sheetLink) {
 	SPREADSHEETS.active_spreadsheet.attr("src",sheetLink);
+	SPREADSHEETS.active_layer_refresh_button.attr("fileId",sheetId);
+	SPREADSHEETS.active_layer_unload_data_button.attr("fileId",sheetId);
+	SPREADSHEETS.active_layer_load_data_button.attr("fileId",sheetId);
 }
 
 Spreadsheets.prototype.resizeSpreadsheetsUI = function(){
 	SPREADSHEETS.overlay.css("max-width",$(window).width() - 225);
 	SPREADSHEETS.active_container.height($(window).height() - 50);
+}
+
+Spreadsheets.prototype.refreshLayer = function(){
+	
 }
 
 function _SheetXHR(url,callback){
