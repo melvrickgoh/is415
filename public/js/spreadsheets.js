@@ -3,7 +3,7 @@ function Spreadsheets () {
 
   this.overlay = $('#spreadsheets-overlay');
   this.overlay_toggle = $('#spreadsheets-overlay > .icon-bar');
-  this.files_nil_message = $('#spreadsheets-overlay > .nil-message');
+  this.files_nil_message = $('#spreadsheets-overlay > .container-fluid > .nil-message');
   this.spreadsheets_container = $('#spreadsheets-overlay > .container-fluid > .sheets'); 
   this.spreadsheet_control = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control');
 
