@@ -34,6 +34,12 @@ var GOOGLE_PLACES = function (XHR,map,base_location){
   this.map = map;
   this.map_location = base_location;
 
+  /*text search bar */
+  this.text_search_input = document.getElementById('search_text');
+  autocomplete = new google.maps.places.Autocomplete(this.text_search_input, {
+    bounds: new google.maps.LatLngBounds(new google.maps.LatLng(1.241805,103.613931),new google.maps.LatLng(1.463530,104.023172))
+  });
+
   this.service = new google.maps.places.PlacesService(this.map);
 
   this.singaporePlacesSearch = function(type,callback){
