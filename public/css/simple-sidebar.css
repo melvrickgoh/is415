@@ -3,6 +3,10 @@
  * Code licensed under the Apache License v2.0.
  * For details, see http://www.apache.org/licenses/LICENSE-2.0.
  */
+/* Google Autosuggest */
+.pac-container{
+  background-color: rgba(255,255,255,0.8);
+}
 /* Overlay */
 #loading{
     z-index: 1000000000;
