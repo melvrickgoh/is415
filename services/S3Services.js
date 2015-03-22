@@ -1,4 +1,5 @@
 var S3 = require('s3');
+const fs = require('fs');
 
 var client = S3.createClient({
   s3Options: {
@@ -42,6 +43,10 @@ S3Services.prototype.upload = function(uuid,filename,callback){
 	});
 	uploader.on('end', function() {
 	  //console.log("done uploading");
+	  fs.unlink(filePath, function (err) {
+	  if (err) { callback(false,err); }
+		  callback(true,'File deleted successfully: ' + localFile);
+		});
 	  callback(true,"https://s3-ap-southeast-1.amazonaws.com/spatia/"+uuid+".json");
 	});
 }
