@@ -29,7 +29,7 @@ GoogleUsersDAO.prototype.updateUser = function(user,callback){
 		},{
 			name:TOOLKIT_FOLDER_ID,
 			type:'string',
-			value:user.ocrFolder.id
+			value:user.spreadsheetsFolder.id
 		}],
 		conditions:[GOOGLE_ID + ' = \'' + user.id + '\'']
 	}
@@ -71,7 +71,7 @@ GoogleUsersDAO.prototype.extractUsersDetails = function(users){
 			"gender":user.gender,
 			"lastvisit":user.lastVisit.getTime(),
 			"refreshtoken":user.refreshToken,
-			"toolkitfolder":user.ocrFolder.id
+			"toolkitfolder":user.spreadsheetsFolder.id
 		});
 	}
 	return extract;

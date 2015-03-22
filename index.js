@@ -77,13 +77,6 @@ main_router.route('/secure_map')
 		},'secure_map');
 	});
 
-main_router.route('/api/user/spreadsheets_meta')
-	.all(function(req,res){
-		_restrict(req,res,function(user){
-			res.json(req.session.user.data_spreadsheets);
-		},'/api/user/spreadsheets_meta');
-	});
-
 main_router.route('/login')
 	.all(function(req,res){
 		GoogleAPIs.login(res);
@@ -99,16 +92,94 @@ main_router.route('/oauth2callback')
 		data_spreadsheets = [];
 
 		GoogleAPIs.getUserAndDriveProfile(code,function(resultType,err,results,tokens,oauth2Client,client) {
-	      if (err) {
+      if (err) {
+        console.log('An error occured', err);
+        return;
+      }else{
+      	switch(resultType){
+      		case 'profile':
+      			SessionServices.loadUser(results,loggedInUser,tokens,oauth2Client,client);
+      			break;
+      		case 'folder':
+      			loggedInUser.spreadsheetsFolder = results;
+      			break;
+      		case 'drive':
+      			SessionServices.loadFiles(files,results.items);
+      			break;
+      		default:
+      			break;
+      	}
+      	returnCounter++;
+
+      	if (returnCounter == 3){//assign to the user the files at the end of the second callback
+      		loggedInUser.files = files;
+
+      		SessionServices.loadSpreadsheets(files,data_spreadsheets,loggedInUser.spreadsheetsFolder.id);
+
+      		loggedInUser.data_spreadsheets = data_spreadsheets;
+      		req.session.user = loggedInUser; //set the session to that of this user
+      		req.flash('user',loggedInUser);
+
+      		var authorization = req.session.authorization;
+				  if (!authorization) {
+				    authorization = req.session.authorization = {}
+				  }
+				  req.session.authorization['tokens'] = tokens;
+				  req.session.authorization['authClient'] = oauth2Client;
+				  req.session.authorization['client'] = loggedInUser.client;
+
+      		var targetRedirect = req.flash('target_locale')[0];//use only the first element as the result
+
+      		//update user database on user details
+      		uController.processGoogleLogin(loggedInUser,function(action,isSuccess,result){
+      			//action performed
+      			switch(action){
+      				case 'Update User':
+      					break;
+      				case 'Insert User':
+      					break;
+      				default:
+      			}
+      		});
+
+      		switch(targetRedirect){
+      			case 'secure_map':
+      				req.flash('target_locale',undefined);//reset given that you've logged in already
+      				res.redirect('/secure_map');
+      				break;
+      			default:
+      				res.redirect('/');
+      		}
+      	}
+      }
+    });
+	});
+
+main_router.route('/api/user/spreadsheets_meta')
+	.all(function(req,res){
+		_restrict(req,res,function(user){
+			res.json(req.session.user.data_spreadsheets);
+		},'/api/user/spreadsheets_meta');
+	});
+
+main_router.route('/api/user/refresh_drive_profile')
+	.all(function(req,res){
+		_restrict(req,res,function(user){
+			var returnCounter = 0,
+				loggedInUser = req.session.user,
+				files = [],
+				data_spreadsheets = [];
+
+			GoogleAPIs.refreshDriveProfile(req.session.authorization['tokens'],function(resultType,err,results,tokens,oauth2Client,client){
+				//reacquiring user files and spreadsheets info
+
+				if (err) {
 	        console.log('An error occured', err);
 	        return;
 	      }else{
 	      	switch(resultType){
-	      		case 'profile':
-	      			SessionServices.loadUser(results,loggedInUser,tokens,oauth2Client,client);
-	      			break;
 	      		case 'folder':
-	      			loggedInUser.ocrFolder = results;
+	      			loggedInUser.spreadsheetsFolder = results;
 	      			break;
 	      		case 'drive':
 	      			SessionServices.loadFiles(files,results.items);
@@ -118,10 +189,10 @@ main_router.route('/oauth2callback')
 	      	}
 	      	returnCounter++;
 
-	      	if (returnCounter == 3){//assign to the user the files at the end of the second callback
+	      	if (returnCounter == 2){//assign to the user the files at the end of the second callback
 	      		loggedInUser.files = files;
 
-	      		SessionServices.loadSpreadsheets(files,data_spreadsheets,loggedInUser.ocrFolder.id);
+	      		SessionServices.loadSpreadsheets(files,data_spreadsheets,loggedInUser.spreadsheetsFolder.id);
 
 	      		loggedInUser.data_spreadsheets = data_spreadsheets;
 	      		req.session.user = loggedInUser; //set the session to that of this user
@@ -135,39 +206,11 @@ main_router.route('/oauth2callback')
 					  req.session.authorization['authClient'] = oauth2Client;
 					  req.session.authorization['client'] = loggedInUser.client;
 
-	      		var targetRedirect = req.flash('target_locale')[0];//use only the first element as the result
-
-	      		//update user database on user details
-	      		uController.processGoogleLogin(loggedInUser,function(action,isSuccess,result){
-	      			//action performed
-	      			switch(action){
-	      				case 'Update User':
-	      					console.log(result);
-	      					break;
-	      				case 'Insert User':
-	      					console.log(result);
-	      					break;
-	      				default:
-	      			}
-	      		});
-
-	      		switch(targetRedirect){
-	      			case 'secure_map':
-	      				req.flash('target_locale',undefined);//reset given that you've logged in already
-	      				res.redirect('/secure_map');
-	      				break;
-	      			default:
-	      				res.redirect('/');
-	      		}
+	      		res.json(loggedInUser); //return user json data
 	      	}
 	      }
-	      
-	    });
-	});
-
-main_router.route('/squarefoot')
-	.all(function(req, res) {
-		res.render('squarefoot', { message: 'Congrats, you just set up your app!' });
+			});
+		},'/api/user/refresh_drive_profile');
 	});
 
 main_router.route('/autosuggest/places')
@@ -270,6 +313,23 @@ main_router.route('/api/foursquare/text_search')
 					}else{
 						res.send(response);
 					}
+				});
+			}
+		});
+	});
+
+main_router.route('/api/spreadsheet/load')
+	.all(function(req,res){
+		var sheetId = req.query.id,
+		userTokens = req.session.authorization['tokens'];
+		
+		GoogleAPIs.Spreadsheets.load(sheetId,userTokens,function(isSuccess,spreadsheet){
+			if (isSuccess) {
+				res.json(spreadsheet);
+			}else{
+				res.json({
+					error: true,
+					err: spreadsheet
 				});
 			}
 		});

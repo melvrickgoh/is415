@@ -6,7 +6,8 @@ SERVICE_CLIENT_KEY = process.env.GOOGLE_CLIENT_KEY;
 SERVICE_ID = process.env.SERVICE_CLIENT_ID;
 SERVICE_EMAIL = process.env.SERVICE_CLIENT_EMAIL;
 
-var googleapis = require('googleapis');
+var googleapis = require('googleapis'),
+GoogleSpreadsheets = require("google-spreadsheets");
 var OAuth2Client = googleapis.OAuth2Client;
 var CLIENT_ID = process.env.GOOGLE_BROWSER_CLIENT_ID;
 var CLIENT_SECRET = process.env.GOOGLE_BROWSER_CLIENT_SECRET;
@@ -90,7 +91,17 @@ GoogleServices.prototype.getUserAndDriveProfile = function(code,callback){
   		_getDriveProfile(client,oauth2Client,'me',function(err,results){callback('drive',err,results,tokens,oauth2Client)});
   		_getClientFolders(client,oauth2Client,'me',function(err,results){
   			_processAndCheckSpatialToolkitFolder(results,callback,client,oauth2Client,tokens);
-  		})
+  		});
+		});
+	});
+}
+
+GoogleServices.prototype.refreshDriveProfile = function(tokens,callback){
+	var oauth2Client = _renewClientOAuth2(tokens);
+	_executeCommand(oauth2Client,function(client,oauth2Client){			
+		_getDriveProfile(client,oauth2Client,'me',function(err,results){callback('drive',err,results,tokens,oauth2Client)});
+		_getClientFolders(client,oauth2Client,'me',function(err,results){
+			_processAndCheckSpatialToolkitFolder(results,callback,client,oauth2Client,tokens);
 		});
 	});
 }
@@ -117,6 +128,97 @@ GoogleServices.prototype.searchPlaces = function(searchType,locaiton,callback){
 		});*/
 	}
 	_serviceAccountExecution(authClientCallback);
+}
+
+/* IMPORTANT - for Classing Spreadsheet Methods */
+GoogleServices.prototype.Spreadsheets = {};
+
+GoogleServices.prototype.Spreadsheets.load = function(sheetId,tokens,callback){
+	GoogleSpreadsheets({
+    key: sheetId,
+    auth: _renewClientOAuth2(tokens)
+  }, function(err, spreadsheets) {
+	  if (err) { callback(false,err) }
+	  else {
+	  	_spreadsheetsAggregateData(spreadsheets,function(worksheetsResponse){
+	  		callback(true,{
+		  		title: spreadsheets.title,
+		  		worksheets: worksheetsResponse
+		  	});
+	  	});
+	  }
+  });
+}
+
+/*
+* aggregate point data content
+*/
+function _spreadsheetsAggregateData(spreadsheet,callback){
+	var worksheets = spreadsheet.worksheets,
+	worksheetsResponse = {};
+	
+	for (var i in worksheets){
+		var worksheet = worksheets[i];
+		worksheetsResponse[worksheet.id] = {
+			id: worksheet.id,
+			title: worksheet.title
+		}
+		worksheet.cells({},function(err,cells){
+			worksheetsResponse[worksheet.id]['cells'] = _parsePointData(cells['cells']);
+
+			if (i == worksheets.length-1){
+				callback(worksheetsResponse);
+			}
+		});
+	}
+}
+/*
+*	parse cell info into coordinates + title & other attributes
+*/
+function _parsePointData(cells){
+	var pointDataResponse = [],
+	attributes = {},
+	latKey = undefined,
+	lonKey = undefined;
+
+	var getTitles = function(row1){
+		var keys = Object.keys(row1);
+		for (var i in keys) {
+			var rowValues = row1[keys[i]],
+			rowContent = rowValues['value'].trim().toLowerCase();
+
+			attributes[rowValues['col']] = rowValues['value'];
+			if ( rowContent == 'latitude' || rowContent == 'lat' ) {
+				latKey = rowValues['col'];
+			}else if (rowContent == 'longitude' || rowContent == 'lon' ) {
+				lonKey = rowValues['col'];
+			}
+		}
+	}
+
+	getTitles(cells['1']);
+
+	var rows = Object.keys(cells);
+	for (var i = 2; i<=rows.length; i++) {
+		var row = cells[i+''],
+		columnKeys = Object.keys(row),
+		packageResult = {};
+
+		for (var j in columnKeys) {
+			var cellValue = row[columnKeys[j]];
+
+			if (cellValue['col'] == latKey) {
+				packageResult['lat'] = parseFloat(cellValue['value']);
+			}else if (cellValue['col'] == lonKey) {
+				packageResult['lon'] = parseFloat(cellValue['value']);
+			}else{
+				packageResult[attributes[cellValue['col']]] = cellValue['value'];
+			}
+		}
+		pointDataResponse.push(packageResult);
+	}
+
+	return pointDataResponse;
 }
 
 /*

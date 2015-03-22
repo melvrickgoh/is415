@@ -7,6 +7,8 @@ function Spreadsheets () {
   this.spreadsheets_container = $('#spreadsheets-overlay > .container-fluid > .sheets'); 
   this.spreadsheet_control = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control');
 
+  this.spreadsheets_refresh_button = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .spreadsheets-refresh');
+
   this.active_container = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-sheet')
   this.active_spreadsheet = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-sheet > iframe');
   
@@ -15,7 +17,10 @@ function Spreadsheets () {
   this.active_layer_unload_data_button = $('#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-taskbar > .btn-unload-data');
   this.active_layer_name;
   //initialize values
-  this.overlay_toggle.click(this.toggleOverlay);
+  this.overlay_toggle.click(this.toggleOverlay); //toggling of sheets sidebar
+  this.spreadsheets_refresh_button.click(this.API.refreshDrive); //refreshing of user drive info
+  this.active_layer_refresh_button.click(this.API.refreshLayer);//refresh front end loading of user data
+  this.active_layer_load_data_button.click(this.API.loadLayer);//load layer on the front end
 }
 
 Spreadsheets.prototype.toggleOverlay = function(e){
@@ -97,7 +102,10 @@ Spreadsheets.prototype.initializeSheetContainer = function(spreadsheets){
 	SPREADSHEETS.active_container.height(window.innerHeight - 50);
 
 	SPREADSHEETS.generateNewSheetControls(spreadsheets);
+}
 
+Spreadsheets.prototype.emptySheetControls = function(){
+	$('div').remove('.row.sheet-control');
 }
 
 Spreadsheets.prototype.generateNewSheetControls = function(spreadsheets){
@@ -112,6 +120,7 @@ Spreadsheets.prototype.generateNewSheetControls = function(spreadsheets){
 Spreadsheets.prototype.generateNewSheetControl = function(sheetId,sheetTitle,sheetLink){
 	return $('<div></div>')
 		.addClass("row")
+		.addClass("sheet-control")
 		.attr("sheetId",sheetId)
 		.attr("sheetLink",sheetLink)
 		.click(function(e){
@@ -125,9 +134,9 @@ Spreadsheets.prototype.generateNewSheetControl = function(sheetId,sheetTitle,she
 
 Spreadsheets.prototype.activateSpreadsheet = function(sheetId,sheetLink) {
 	SPREADSHEETS.active_spreadsheet.attr("src",sheetLink);
-	SPREADSHEETS.active_layer_refresh_button.attr("fileId",sheetId);
+	SPREADSHEETS.active_layer_refresh_button.attr("fileId",sheetId).click(SPREADSHEETS.refreshLayer);
 	SPREADSHEETS.active_layer_unload_data_button.attr("fileId",sheetId);
-	SPREADSHEETS.active_layer_load_data_button.attr("fileId",sheetId);
+	SPREADSHEETS.active_layer_load_data_button.attr("fileId",sheetId).click(SPREADSHEETS.loadLayer);
 }
 
 Spreadsheets.prototype.resizeSpreadsheetsUI = function(){
@@ -136,7 +145,36 @@ Spreadsheets.prototype.resizeSpreadsheetsUI = function(){
 }
 
 Spreadsheets.prototype.refreshLayer = function(){
-	
+	var fileid = SPREADSHEETS.active_layer_refresh_button.attr('fileid');
+	SPREADSHEETS.API.getSheet(fileid,function(spreadsheet){
+		
+	});
+}
+
+Spreadsheets.prototype.loadLayer = function(){
+	//action to load layers data here
+}
+
+/*IMPORTANT: For classing API methods of sheets in */
+Spreadsheets.prototype.API = {};
+
+Spreadsheets.prototype.API.refreshDrive = function(){
+	SPREADSHEETS.spreadsheets_refresh_button.addClass('fa-spin');
+	_SheetXHR('/api/user/refresh_drive_profile',function(user){
+		SPREADSHEETS.emptySheetControls();
+		SPREADSHEETS.generateNewSheetControls(user.data_spreadsheets);
+		//done refreshing and rendering information
+		SPREADSHEETS.spreadsheets_refresh_button.removeClass('fa-spin');
+	});
+}
+
+Spreadsheets.prototype.API.getSheet = function(sheetId,callback) {
+	OVERLAY.show();
+	_SheetXHR('/api/spreadsheet/load?id='+sheetId,function(results){
+		if (results.error) { alert('Error trying to retrieve spreadsheet data. Please try again'); }
+		else {callback(results);}
+		OVERLAY.hide();
+	});
 }
 
 function _SheetXHR(url,callback){

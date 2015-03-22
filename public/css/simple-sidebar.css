@@ -448,6 +448,17 @@ a:hover.tooltips span {
   text-align: left;
   font-weight: 700; 
 }
+/* Refresh spreadsheets button */
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .spreadsheets-refresh {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 12px 10px;
+}
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .spreadsheets-refresh:hover,
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .spreadsheets-refresh.fa-spin {
+  color:rgba(28, 146, 218, 0.8);
+}
 #spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .row {
   padding: 10px 10px;
 }
@@ -468,7 +479,6 @@ a:hover.tooltips span {
 #spreadsheets-overlay > .show{
     visibility: visible;
 }
-
 /* bootstrap buttons */
 .btn-refresh{   margin: 10px 5px 10px 10px; background-color: rgba(0,100,180,0.7); color:white; }
 .btn-refresh:hover{ background-color: rgba(0,100,180,0.9); color:white; }
