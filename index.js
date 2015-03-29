@@ -40,51 +40,123 @@ var PlacesController = new places_controller(GoogleAPIs,GooglePlacesAdapter,Four
 
 var SQUARE_FOOT_KEY = process.env.SQUARE_FOOT_KEY;
 
-
-var geojsonhint = require('geojsonhint');
-
 //upload start
 var multer      =    require('multer');
 var app         =    express();
-var done        =    false;
+var bodyParser = require('body-parser');
+var multer = require('multer');         
+var fs = require("fs");
 
-app.use(multer({ dest: './uploads/',
- rename: function (fieldname, filename) {
-    return filename+Date.now();
-  },
-onFileUploadStart: function (file) {
-	/**
-	//check for geojson
-	var jsonExtension = file.originalname.spilt(".");
-	if(jsonExtension[1].toLowerCase() == "json") {
-	  console.log(file.originalname + ' is starting ...')
-	} else {
-		return false;
+// these statements config express to use these modules, and only need to be run once
+app.use(bodyParser.json());         
+app.use(bodyParser.urlencoded({ extended: true }));          
+app.use(multer());
+
+// set up your routes                                    
+
+app.post('/upload/geoJSON', function(req, res) {
+	console.log(req.body);
+    console.log(req.files.geojson);
+	console.log(req.files.geojson.path);
+	var geojsonType = req.body.mySelect;
+	var tmp_path = req.files.geojson.path;
+	// set where the file should actually exists - in this case it is in the "images" directory
+	if (geojsonType == 'point'){
+		//read data and display
+		
+	} else if (geojsonType == 'polygon'){
+		//upload to google drive
+		GeoUploadController.prototype.uploadToS3 = function(fileData,userGoogleID,callback)
+		
+	}
 	
-	}**/
-},
-onFileUploadComplete: function (file) {
-  var errors =	geojsonhint.hint(file).message
-  console.log(file	.fieldname + ' uploaded to  ' + file.path + ' geojson file errors: ' + errors)
-  done=true;
-}
-}));
+	/**
+    var target_path = './public/uploads/' + req.files.geojson.name;
+	// move the file from the temporary location to the intended location
+    fs.rename(tmp_path, target_path, function(err) {
+        if (err) throw err;
+        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
+        fs.unlink(tmp_path, function() {
+            if (err) throw err;
+            res.send('File uploaded to: ' + target_path + ' - ' + req.files.geojson.size + ' bytes');
+        });
+	});
+	**/
+	
+});                                     
 
-app.post('/upload/geoJSON',function(req,res){
-  if(done==true){
-    //console.log(req.files);
+app.listen(3000,function(){
+    console.log("Working on port 3000");
+});                     
+
+module.exports = app;  
+
+/**
+var fileupload = require('fileupload').createFileUpload('/uploadDir').middleware
+
+
+app.post('/upload/geoJSON',fileupload, function(req, res) {
+    console.log(req.query);
+	console.log(req.body);
+	console.log(req.body.mySelect);
+    console.log(req.files.geojson);
+	
+	 var tmp_path = req.files.geojson.path;
+    
+	// set where the file should actually exists - in this case it is in the "images" directory
+    var target_path = './public/uploads/' + req.files.geojson.name;
+    // move the file from the temporary location to the intended location
+    fs.rename(tmp_path, target_path, function(err) {
+        if (err) throw err;
+        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
+        fs.unlink(tmp_path, function() {
+            if (err) throw err;
+            res.send('File uploaded to: ' + target_path + ' - ' + req.files.geojson.size + ' bytes');
+        });
+	});
+	
 	backURL=req.header('Referer') || '/';
 	//console.log(req.files.fileUploaded.name.split("."));
 	var filename=req.files.fileUploaded.name.split(".");
 	backURL.concat(filename[0]);
-	console.log(backURL+filename[0]);
-	res.redirect(backURL+'?userfilepresent=true&userfile='+filename[0]);
-  }
+	console.log("backURL: "+backURL+", filename: "+filename[0]);
+	
+	
+	var oldURL = backURL;
+	var index = 0;
+	var newURL = oldURL;
+	index = oldURL.indexOf('?');
+	if(index == -1){
+		index = oldURL.indexOf('#');
+	}
+	if(index != -1){
+		newURL = oldURL.substring(0, index);
+	}
+	
+	res.redirect(newURL+'?userfilepresent=true&userfile='+filename[0]);
 });
+
+	**/
+	
+	//Unverified code
+	
+	/**
+	
+	GeoUploadController.prototype.uploadToS3();
+	
+	var StaticData = require('/public/uploads/'+filename[0]+'.js');
+	console.log('LOOKING AT: /public/uploads/'+filename[0]+'.js');
+	var StaticSpatialUploaded = new StaticData();
+	
+	main_router.route('/api/data/user_uploaded')
+	.all(function(req,res){
+		user_uploaded = StaticSpatial.filename();
+		res.send(user_uploaded);
+		});
+	**/
+	// end unverified code
  
-app.listen(3000,function(){
-    console.log("Working on port 3000");
-});
+
 //upload end
 
 

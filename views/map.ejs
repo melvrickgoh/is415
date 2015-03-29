@@ -107,9 +107,15 @@
 				<li class="sidebar-brand">Upload File</li>
                 <li><!--File upload test code-->
 				
-				<form method='post' action='/upload/geoJSON' enctype="multipart/form-data">
-				<input type='file' name='fileUploaded'>
-				<input type='submit'>
+				<form method="post" enctype="multipart/form-data" action="/upload/geoJSON">
+					<input type="file" name="geojson">
+					<select name="mySelect">
+					  <option value="point">Point Data</option>
+					  <option value="polygon">Polygon Data</option>
+					</select> <br/>
+					<input type="submit">
+				</form>
+
 				</li>
 				
 				
