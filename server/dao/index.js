@@ -75,11 +75,11 @@ pgDAO.prototype.initialize = function(){
 
 pgDAO.prototype.getConnection = function(queryObject,callback,errCallback){
   var client = new pg.Client({
-    user: "raooddscbjubfm",
-    password: "_hRtPSh-P_d97Za496xD75SBCp",
-    database: "d1v8k0l98bmvg4",
-    port: 5432,
-    host: "ec2-107-20-169-200.compute-1.amazonaws.com",
+    user: process.env.PG_DB_USER,
+    password: process.env.PG_DB_TOKEN,
+    database: process.env.PG_DB_NAME,
+    port: process.env.PG_DB_PORT,
+    host: process.env.PG_DB_HOST,
     ssl: true
 	}); 
 	client.connect();
@@ -90,22 +90,6 @@ pgDAO.prototype.getConnection = function(queryObject,callback,errCallback){
 		//errCallback(err); 
 		console.log(err);
 	}
-  /*
-  pg.connect(conString, function(err, client, done) {
-		console.log(err);
-		console.log(client);
-		console.log(done);
-		try{
-			client.query(queryObject,callback);
-			done();
-		}catch(err){
-			//errCallback(err);
-			console.log('pg connection');
-			console.log(err);
-	    done(client);
-		}
-  });
-	*/
 }
 
 pgDAO.prototype.update = function(details,callback){

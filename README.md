@@ -47,6 +47,12 @@ git merge origin/master
 4. Make a pull request on [Github Pull Request](https://github.com/melvrickgoh/is415/pulls)
 5. One of us collaborators will do a quick code review before sending it to our deployed server
 
+After Merging
+6. Delete the branch from tracking with the following. -d for soft delete. -D of force delete
+```
+git branch -d origin <delete_merged_branch_name>
+```
+
 ### Useful: See the branch you're on
 Show the branches available and the one you're on
 ```

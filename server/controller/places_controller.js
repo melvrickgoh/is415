@@ -12,12 +12,25 @@ function PlacesController (googleapis,googleplaces,foursquarevenues) {
 PlacesController.prototype.searchPlaces = function(type,callback){
 	GooglePlaces.search({
 		location	: SINGAPORE_LATLON,
-		types			: type
+		types			: type,
+		radius 		: 25000.
+	},callback);
+}
+
+PlacesController.prototype.textSearchPlaces = function(query,callback){
+	GooglePlaces.textSearch({
+		query 		: query,
+		location	: SINGAPORE_LATLON,
+		radius 		: 25000
 	},callback);
 }
 
 PlacesController.prototype.searchVenues = function(id,callback){
 	FoursquareVenues.search(id,callback);
+}
+
+PlacesController.prototype.textSearchVenues = function(id,callback){
+	FoursquareVenues.text_search(id,callback);
 }
 
 PlacesController.prototype.constructor = PlacesController;

@@ -28,17 +28,24 @@ var COLOR_PALETTE = function() {
   }
 }
 
-var GOOGLE_PLACES = function (map,base_location){
+var GOOGLE_PLACES = function (XHR,map,base_location){
+  this.XHR = XHR;
   this.API_KEY = 'AIzaSyBF9YdzEWQUMpYLLVkRu_UXDahy2UOCDmw';
   this.map = map;
   this.map_location = base_location;
+
+  /*text search bar */
+  this.text_search_input = document.getElementById('search_text');
+  autocomplete = new google.maps.places.Autocomplete(this.text_search_input, {
+    bounds: new google.maps.LatLngBounds(new google.maps.LatLng(1.241805,103.613931),new google.maps.LatLng(1.463530,104.023172))
+  });
 
   this.service = new google.maps.places.PlacesService(this.map);
 
   this.singaporePlacesSearch = function(type,callback){
     this.service.nearbySearch({
       location: this.map_location,
-      radius: '50000',
+      radius: '25000',
       types: [type],
       key: this.API_KEY
     },callback);
@@ -46,7 +53,15 @@ var GOOGLE_PLACES = function (map,base_location){
 
   this.placeDetailsRequest = function(placeID,callback){
     this.service.getDetails({
-      placeId: placeID
+      placeId: placeID,
+      key: this.API_KEY
+    },callback);
+  }
+
+  this.singaporeTextSearch = function(content,callback){
+    this.service.textSearch({
+      query: content,
+      bounds: new google.maps.LatLngBounds(new google.maps.LatLng(1.241805,103.613931),new google.maps.LatLng(1.463530,104.023172))
     },callback);
   }
 }
@@ -58,7 +73,18 @@ var FOURSQUARE_VENUES = function(XHR, SINGAPORE_LATLON){
 
   this.singaporeVenuesSearch = function(place_name,callback){
     var venueID = this.venues_hash[place_name];
-    XHR('/api/venues_search?id='+venueID.id,function(response){
+    XHR('/api/foursquare/venues_search?id='+venueID.id,function(response){
+      var res = JSON.parse(response);
+      if (res.error){
+        callback(true);
+      } else {
+        callback(false,res);
+      }
+    });
+  }
+
+  this.singaporeVenuesTextSearch = function(query_term,callback){
+    XHR('/api/foursquare/text_search?search='+query_term,function(response){
       var res = JSON.parse(response);
       if (res.error){
         callback(true);
@@ -890,6 +916,8 @@ $("#menu-toggle").click(function(e) {
     $("#wrapper").toggleClass("toggled");
 });
 $('#map').height(window.innerHeight);
+$('#search_text_container').width(542);
+$('#search_text_container').css('left',window.innerWidth/2 - 540/2);
 $('#search_places_container').width(542);
 $('#search_places_container').css('left',window.innerWidth/2 - 540/2);
 $('#search_venues_container').width(542);
@@ -897,11 +925,23 @@ $('#search_venues_container').css('left',window.innerWidth/2 - 540/2);
 
 $('#search_amenities').width(500);
 $('#search_foursquare').width(500);
+$('#search_text').width(500);
 
 function cancelEvents(){
     if ($('#search_places_container').css('visibility') == 'visible'){
         $('#search_places_container').css('visibility','hidden');
     }
+}
+
+function showTextSearch(searchContainer){
+  $('#taskbar_text_search_icon').css('color','rgba(250,70,0,1)');
+  searchContainer.css('visibility','visible');
+  $('#search_text').focus();
+}
+
+function hideTextSearch(searchContainer){
+  $('#taskbar_text_search_icon').css('color','rgba(250,70,0,0.7)');
+  searchContainer.css('visibility','hidden');
 }
 
 function showPlacesSearch(searchContainer){
@@ -929,7 +969,8 @@ function hideVenuesSearch(searchContainer){
 function toggleEvents(e){
     e = e || window.event;
     var searchPlacesContainer = $('#search_places_container'),
-    searchVenuesContainer = $('#search_venues_container');
+    searchVenuesContainer = $('#search_venues_container'),
+    textSearchContainer = $('#search_text_container');
     var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
     if (charCode && String.fromCharCode(charCode) == "`") {
         $("#wrapper").toggleClass("toggled");
@@ -937,6 +978,18 @@ function toggleEvents(e){
 
     if (charCode && String.fromCharCode(charCode) == "1") {
       hideVenuesSearch(searchVenuesContainer);
+      hidePlacesSearch(searchPlacesContainer);
+      if (textSearchContainer.css('visibility') == 'hidden') {
+        showTextSearch(textSearchContainer);
+      }else{
+        hideTextSearch(textSearchContainer);
+      }
+      setTimeout(function(){$('#search_text').val("");},100);
+    }
+
+    if (charCode && String.fromCharCode(charCode) == "2") {
+      hideVenuesSearch(searchVenuesContainer);
+      hideTextSearch(textSearchContainer);
       if (searchPlacesContainer.css('visibility') == 'hidden') {
         showPlacesSearch(searchPlacesContainer);
       }else{
@@ -945,8 +998,9 @@ function toggleEvents(e){
       setTimeout(function(){$('#search_amenities').val("");},100);
     }
 
-    if (charCode && String.fromCharCode(charCode) == "2") {
+    if (charCode && String.fromCharCode(charCode) == "3") {
       hidePlacesSearch(searchPlacesContainer);
+      hideTextSearch(textSearchContainer);
       if (searchVenuesContainer.css('visibility') == 'hidden') {
         showVenuesSearch(searchVenuesContainer);
       }else{
@@ -958,7 +1012,8 @@ function toggleEvents(e){
 document.onkeypress=toggleEvents
 
 var places_search_taskbar_icon = document.getElementById('taskbar_places_search'),
-venues_search_taskbar_icon = document.getElementById('taskbar_venues_search');
+venues_search_taskbar_icon = document.getElementById('taskbar_venues_search'),
+text_search_taskbar_icon = document.getElementById('taskbar_text_search');
 places_search_taskbar_icon.onclick = function(){
   var searchContainer = $('#search_places_container');
   if (searchContainer.css('visibility') == 'hidden') {
@@ -969,6 +1024,14 @@ places_search_taskbar_icon.onclick = function(){
 }
 venues_search_taskbar_icon.onclick = function(){
   var searchContainer = $('#search_venues_container');
+  if (searchContainer.css('visibility') == 'hidden') {
+    showPlacesSearch(searchContainer);
+  }else{
+    hidePlacesSearch(searchContainer);
+  }
+}
+text_search_taskbar_icon.onclick = function(){
+  var searchContainer = $('#search_text_container');
   if (searchContainer.css('visibility') == 'hidden') {
     showPlacesSearch(searchContainer);
   }else{
@@ -1001,7 +1064,7 @@ fake_google_map = new google.maps.Map(document.getElementById('fake_map'),{
 });
 
 var COLORS = new COLOR_PALETTE();
-var PLACES_API = new GOOGLE_PLACES(fake_google_map,fake_google_map_location);
+var PLACES_API = new GOOGLE_PLACES(XHR,fake_google_map,fake_google_map_location);
 var VENUES_API = new FOURSQUARE_VENUES(XHR,SINGAPORE_LATLON);
 var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API,COLORS);
 MAP.initialize();
@@ -1012,6 +1075,32 @@ MAP.setSidebar(SIDEBAR);
 var place_categories,
 venues_categories,
 venues_hash;
+
+var submitTextSearchParameters = function(){
+  var input = $('#search_text').val();
+  var showSearchErrorMessage = function(){
+
+  };
+
+  showTextLoader(); //show loading spinner for results
+  PLACES_API.singaporeTextSearch(input,function(results,status,pagination){
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+
+      MAP.loadPlacesPointLayer(input,pagination.D,results);
+      if (pagination.hasNextPage){
+        pagination.nextPage();
+      }else{
+        hideTextLoader(); // finally done loading
+      }
+
+    }
+
+    if (status == "ZERO_RESULTS") {
+      alert('No results found');
+      hideTextLoader();
+    }
+  });
+}
 
 var submitSearchParameters = function(){
   var input = $('#search_amenities').val();
@@ -1081,6 +1170,17 @@ search_venues_arrow.onclick = function(e){
   submitVenuesSearchParameters();
 }
 
+var search_text_arrow = document.getElementById('search_text_enter_arrow');
+search_text_arrow.onmouseover = function(e){
+  search_text_arrow.style.color = 'rgba(64,153,255, 0.8)';
+}
+search_text_arrow.onmouseout = function(e){
+  search_text_arrow.style.color = 'rgba(0,0,0,0.8)';
+}
+search_text_arrow.onclick = function(e){
+  submitTextSearchParameters();
+}
+
 var search_places_loading = document.getElementById('search_enter_loading');
 var showLoader = function(){
     search_places_arrow.style.visibility = 'hidden';
@@ -1097,6 +1197,15 @@ var showVenuesLoader = function(){
 }, hideVenuesLoader = function(){
     search_venues_loading.style.visibility = 'hidden';
     search_venues_arrow.style.visibility = 'visible';
+}
+
+var search_text_loading = document.getElementById('search_text_enter_loading');
+var showTextLoader = function(){
+    search_text_arrow.style.visibility = 'hidden';
+    search_text_loading.style.visibility = 'visible';
+}, hideTextLoader = function(){
+    search_text_loading.style.visibility = 'hidden';
+    search_text_arrow.style.visibility = 'visible';
 }
 
 var autosuggestPlacesSearch = function(){
@@ -1189,6 +1298,16 @@ search_venues_input.onkeypress = function(e){
     }
     if (e.keyCode == 13) {
         submitVenuesSearchParameters();
+    }
+}
+
+var search_text_input = document.getElementById('search_text');
+search_text_input.onkeypress = function(e){
+    if (e.keyCode == 49) {
+        e.preventDefault();
+    }
+    if (e.keyCode == 13) {
+        submitTextSearchParameters();
     }
 }
 

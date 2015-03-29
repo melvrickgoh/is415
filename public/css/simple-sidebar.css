@@ -3,6 +3,26 @@
  * Code licensed under the Apache License v2.0.
  * For details, see http://www.apache.org/licenses/LICENSE-2.0.
  */
+/* Google Autosuggest */
+.pac-container{
+  background-color: rgba(255,255,255,0.8);
+}
+/* Overlay */
+#loading{
+    z-index: 1000000000;
+    width:100%;
+    height:100%;
+    background-color: rgba(255,255,255,0.75);
+    color: rgba(0,0,0,1);
+    position:absolute;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 700; 
+}
+
+#loading > .loading-icon { position: absolute; top:30%; color: rgba(0,0,0,0.7); }
+#loading > .loading-message { position: relative; top:40%; text-align:center;}
+
 /* Scroll style */
 ::-webkit-scrollbar {
     width: 12px;
@@ -97,7 +117,7 @@
     height: 700px;
 }
 
-#search_amenities, #search_foursquare {
+#search_amenities, #search_foursquare, #search_text {
     width: 100%;
     height: 50px;
     position: relative;
@@ -172,7 +192,7 @@
     padding: 0px 0px 0px 0px;
 }
 
-#search_places_container, #search_venues_container {
+#search_places_container, #search_venues_container, #search_text_container {
     height: 50px;
     width: 50%;
     position: absolute;
@@ -195,11 +215,11 @@
     z-index: 1000;
 }
 
-#taskbar_places_search {
+#taskbar_text_search_icon {
     position: absolute;
     left: 100px;
     transform: translate(-25px, 0);
-    bottom: 10px;
+    bottom: -25px;
 }
 
 #taskbar_venues_search {
@@ -209,11 +229,18 @@
     bottom: 10px;
 }
 
-#taskbar_search_icon {
+#taskbar_places_search {
+    position: absolute;
+    right: 50%;
+    transform: translate(25px, 0);
+    bottom: 10px;
+}
+
+#taskbar_search_icon, #taskbar_text_search_icon {
     color: rgba(250,70,0,0.7);
 }
 
-#taskbar_search_icon:hover {
+#taskbar_search_icon:hover, #taskbar_text_search_icon:hover {
     color: rgba(250,70,0,1);
 }
 
@@ -385,3 +412,83 @@ a:hover.tooltips span {
     background-color: rgba(255,255,255,0.5);
     background-image: url(../images/region.png);
 }
+#spreadsheets-overlay{
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 10000;
+  position: absolute;
+  top: 0px;
+  right:0px;
+  text-align:center;
+  transition-property: all;
+  transition-duration: .5s;
+  transition-timing-function: cubic-bezier(0.25,0.1,0.25,1);
+}
+#spreadsheets-overlay.closed{
+  max-width: 0%;
+}
+#spreadsheets-overlay > .icon-bar{
+  height: 75px;
+  width: 75px;
+  background-color: rgba(255, 255, 255, 0.8);
+  transform: translateX(-75px);
+  padding: 20px 0px;
+  margin: auto;
+  position: absolute;
+  text-align: center;
+}
+#spreadsheets-overlay > .icon-bar:hover, #spreadsheets-overlay > .icon-bar.selected{
+  background-color:rgba(28, 146, 218,0.8);
+  color:white;
+}
+#spreadsheets-overlay > .container-fluid > .sheets {
+  text-align: left;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400; 
+}
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > h4 {
+  text-align: left;
+  font-weight: 700; 
+}
+/* Refresh spreadsheets button */
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .spreadsheets-refresh {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 12px 10px;
+}
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .spreadsheets-refresh:hover,
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .spreadsheets-refresh.fa-spin {
+  color:rgba(28, 146, 218, 0.8);
+}
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .row {
+  padding: 10px 10px;
+}
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-control > .row.selected {
+  background-color: rgba(28, 146, 218, 0.8);
+  color: white;
+}
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-sheet > iframe{
+    height: 100%;
+    width: 100%;
+}
+#spreadsheets-overlay > .container-fluid > .sheets > .sheet-content > .active-taskbar{
+
+}
+#spreadsheets-overlay > .hide{
+    visibility: hidden;
+}
+#spreadsheets-overlay > .show{
+    visibility: visible;
+}
+/* bootstrap buttons */
+.btn-refresh{   margin: 10px 5px 10px 10px; background-color: rgba(0,100,180,0.7); color:white; }
+.btn-refresh:hover{ background-color: rgba(0,100,180,0.9); color:white; }
+
+.btn-load-data{   margin: 10px 10px 10px 5px; background-color: rgba(0,180,0,0.7); color:white; }
+.btn-load-data:hover{ background-color: rgba(0,180,0,0.9); color:white; }
+
+.btn-unload-data{   margin: 10px 10px 10px 5px; background-color: rgba(255,0,0,0.7); color:white; }
+.btn-unload-data:hover{ background-color: rgba(255,0,0,0.9); color:white; }

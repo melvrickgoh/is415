@@ -8,12 +8,15 @@ function GooglePlaces () {}
 GooglePlaces.prototype.constructor = GooglePlaces;
 
 GooglePlaces.prototype.search = function(parameters,callback){
-	console.log(GOOGLE_API_KEY);
 	GOOGLE_PLACES.placeSearch(parameters, callback);
 }
 
 GooglePlaces.prototype.details = function(reference,callback){
   GOOGLE_PLACES.placeDetailsRequest({reference:reference}, callback);
+}
+
+GooglePlaces.prototype.textSearch = function(reference,callback){
+	GOOGLE_PLACES.textSearch(parameters,callback);
 }
 
 module.exports = GooglePlaces;

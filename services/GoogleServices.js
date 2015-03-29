@@ -1,12 +1,13 @@
 PLACES_TYPES = ['accounting','airport','amusement_park','aquarium','art_gallery','atm','bakery','bank','bar','beauty_salon','bicycle_store','book_store','bowling_alley','bus_station','cafe','campground','car_dealer','car_rental','car_repair','car_wash','casino','cemetery','church','city_hall','clothing_store','convenience_store','courthouse','dentist','department_store','doctor','electrician','electronics_store','embassy','establishment','finance','fire_station','florist','food','funeral_home','furniture_store','gas_station','general_contractor','grocery_or_supermarket','gym','hair_care','hardware_store','health','hindu_temple','home_goods_store','hospital','insurance_agency','jewelry_store','laundry','lawyer','library','liquor_store','local_government_office','locksmith','lodging','meal_delivery','meal_takeaway','mosque','movie_rental','movie_theater','moving_company','museum','night_club','painter','park','parking','pet_store','pharmacy','physiotherapist','place_of_worship','plumber','police','post_office','real_estate_agency','restaurant','roofing_contractor','rv_park','school','shoe_store','shopping_mall','spa','stadium','storage','store','subway_station','synagogue','taxi_stand','train_station','travel_agency','university','veterinary_care','zoo']
 SERVICE_CERTIFICATE = process.env.SERVICE_CERTIFICATE;
-SERVICE_KEY_FILE = 'googleapi-privatekey.pem';
+SERVICE_KEY_FILE = process.env.GOOGLE_SERVICE_KEY_LOCALE;
 
 SERVICE_CLIENT_KEY = process.env.GOOGLE_CLIENT_KEY;
 SERVICE_ID = process.env.SERVICE_CLIENT_ID;
 SERVICE_EMAIL = process.env.SERVICE_CLIENT_EMAIL;
 
-var googleapis = require('googleapis');
+var googleapis = require('googleapis'),
+GoogleSpreadsheets = require("google-spreadsheets");
 var OAuth2Client = googleapis.OAuth2Client;
 var CLIENT_ID = process.env.GOOGLE_BROWSER_CLIENT_ID;
 var CLIENT_SECRET = process.env.GOOGLE_BROWSER_CLIENT_SECRET;
@@ -14,9 +15,7 @@ var CLIENT_SECRET = process.env.GOOGLE_BROWSER_CLIENT_SECRET;
 //For Client Side logging in
 var OAuth2 = googleapis.auth.OAuth2;
 
-var LOCAL_URL = 'http://localhost:5000/',
-REMOTE_URL = 'http://spatia.herokuapp.com/',
-REDIRECT_URL = LOCAL_URL + 'oauth2callback';
+var REDIRECT_URL = _determineGoogleCallbackType();
 
 var CLIENT_DEFAULT_TOOLKIT_FOLDER_NAME = "spatia/files"
 
@@ -85,7 +84,6 @@ GoogleServices.prototype.getUserAndDriveProfile = function(code,callback){
 	getAccessToken(code,function(oauth2Client,tokens){
   	_executeCommand(oauth2Client,function(client,oauth2Client){
   		_getUserProfile(client,oauth2Client,'me',function(err,results){
-  			console.log(results);
   			callback('profile',err,results,tokens,oauth2Client,client);
 
   		});
@@ -93,7 +91,17 @@ GoogleServices.prototype.getUserAndDriveProfile = function(code,callback){
   		_getDriveProfile(client,oauth2Client,'me',function(err,results){callback('drive',err,results,tokens,oauth2Client)});
   		_getClientFolders(client,oauth2Client,'me',function(err,results){
   			_processAndCheckSpatialToolkitFolder(results,callback,client,oauth2Client,tokens);
-  		})
+  		});
+		});
+	});
+}
+
+GoogleServices.prototype.refreshDriveProfile = function(tokens,callback){
+	var oauth2Client = _renewClientOAuth2(tokens);
+	_executeCommand(oauth2Client,function(client,oauth2Client){			
+		_getDriveProfile(client,oauth2Client,'me',function(err,results){callback('drive',err,results,tokens,oauth2Client)});
+		_getClientFolders(client,oauth2Client,'me',function(err,results){
+			_processAndCheckSpatialToolkitFolder(results,callback,client,oauth2Client,tokens);
 		});
 	});
 }
@@ -109,7 +117,6 @@ GoogleServices.prototype.searchPlaces = function(searchType,locaiton,callback){
 	    return;
 	  }
 	  // Make an authorized request to patch file title.
-	  console.log(client);
 
 	  /*client.places.files.patch({
 	  	fileId:fileID,
@@ -121,6 +128,97 @@ GoogleServices.prototype.searchPlaces = function(searchType,locaiton,callback){
 		});*/
 	}
 	_serviceAccountExecution(authClientCallback);
+}
+
+/* IMPORTANT - for Classing Spreadsheet Methods */
+GoogleServices.prototype.Spreadsheets = {};
+
+GoogleServices.prototype.Spreadsheets.load = function(sheetId,tokens,callback){
+	GoogleSpreadsheets({
+    key: sheetId,
+    auth: _renewClientOAuth2(tokens)
+  }, function(err, spreadsheets) {
+	  if (err) { callback(false,err) }
+	  else {
+	  	_spreadsheetsAggregateData(spreadsheets,function(worksheetsResponse){
+	  		callback(true,{
+		  		title: spreadsheets.title,
+		  		worksheets: worksheetsResponse
+		  	});
+	  	});
+	  }
+  });
+}
+
+/*
+* aggregate point data content
+*/
+function _spreadsheetsAggregateData(spreadsheet,callback){
+	var worksheets = spreadsheet.worksheets,
+	worksheetsResponse = {};
+	
+	for (var i in worksheets){
+		var worksheet = worksheets[i];
+		worksheetsResponse[worksheet.id] = {
+			id: worksheet.id,
+			title: worksheet.title
+		}
+		worksheet.cells({},function(err,cells){
+			worksheetsResponse[worksheet.id]['cells'] = _parsePointData(cells['cells']);
+
+			if (i == worksheets.length-1){
+				callback(worksheetsResponse);
+			}
+		});
+	}
+}
+/*
+*	parse cell info into coordinates + title & other attributes
+*/
+function _parsePointData(cells){
+	var pointDataResponse = [],
+	attributes = {},
+	latKey = undefined,
+	lonKey = undefined;
+
+	var getTitles = function(row1){
+		var keys = Object.keys(row1);
+		for (var i in keys) {
+			var rowValues = row1[keys[i]],
+			rowContent = rowValues['value'].trim().toLowerCase();
+
+			attributes[rowValues['col']] = rowValues['value'];
+			if ( rowContent == 'latitude' || rowContent == 'lat' ) {
+				latKey = rowValues['col'];
+			}else if (rowContent == 'longitude' || rowContent == 'lon' ) {
+				lonKey = rowValues['col'];
+			}
+		}
+	}
+
+	getTitles(cells['1']);
+
+	var rows = Object.keys(cells);
+	for (var i = 2; i<=rows.length; i++) {
+		var row = cells[i+''],
+		columnKeys = Object.keys(row),
+		packageResult = {};
+
+		for (var j in columnKeys) {
+			var cellValue = row[columnKeys[j]];
+
+			if (cellValue['col'] == latKey) {
+				packageResult['lat'] = parseFloat(cellValue['value']);
+			}else if (cellValue['col'] == lonKey) {
+				packageResult['lon'] = parseFloat(cellValue['value']);
+			}else{
+				packageResult[attributes[cellValue['col']]] = cellValue['value'];
+			}
+		}
+		pointDataResponse.push(packageResult);
+	}
+
+	return pointDataResponse;
 }
 
 /*
@@ -164,6 +262,14 @@ function _processAndCheckSpatialToolkitFolder(results,callback,client,oauth2Clie
 	});
 }
 
+function _processSpatialToolkitSpreadsheets(results,callback,client,oauth2Client,tokens){
+
+}
+
+function _getSpatialToolkitSpreadsheets(client, authClient, userId, callback){
+	
+}
+
 function _createClientSpatialToolkitFolder(client, authClient, userId, callback){
 	client.drive.files.insert({
 		resource:{
@@ -185,18 +291,18 @@ function _getDriveProfile(client, authClient, userId, callback){
 	client.drive.files.list({ auth: authClient }, callback);
 }
 
-function _getClientFolders(client, authClient, userId, callback){
-	client.drive.files.list({
-    q: "mimeType = 'application/vnd.google-apps.folder'",
-    auth: authClient
-  },callback);
-}
-
 function _renewClientOAuth2(tokens){
 	var OAuth2 = googleapis.auth.OAuth2;
 	oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 	oauth2Client.setCredentials(tokens);
 	return oauth2Client;
+}
+
+function _getClientFolders(client, authClient, userId, callback){
+	client.drive.files.list({
+    q: "mimeType = 'application/vnd.google-apps.folder'",
+    auth: authClient
+  },callback);
 }
 
 function _executeCommand(oauth2Client,callback){
@@ -222,6 +328,17 @@ function getAccessToken(code, callback) {
 
    		callback(oauth2Client,tokens);
  	});
+}
+
+function _determineGoogleCallbackType(){
+	switch (process.env.DEPLOYMENT_TYPE) {
+		case "staging":
+			return "http://geospatial-melvrick.herokuapp.com/oauth2callback";
+		case "production":
+			return "http://spatia.herokuapp.com/oauth2callback";
+		default:
+			return "http://localhost:5000/oauth2callback"
+	}
 }
 
 module.exports = GoogleServices;

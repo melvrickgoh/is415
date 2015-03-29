@@ -10,6 +10,10 @@ FoursquareVenues.prototype.search = function(id,callback){
 	foursquare.venues.search({ll:"1.3520830,103.819836",radius:25000,categoryId:id},callback);
 }
 
+FoursquareVenues.prototype.text_search = function(text_query,callback){
+	foursquare.venues.search({ll:"1.3520830,103.819836",radius:25000,query:text_query},callback);
+}
+
 FoursquareVenues.prototype.categories = function(callback){
 	foursquare.venues.categories(function(err,res){
 		if (err) { callback(true); return; }

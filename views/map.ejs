@@ -9,7 +9,13 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Geospatial Assignment 1</title>
+    <title>Spatia</title>
+
+    <!-- Favicon ico -->
+    <link rel="shortcut icon" type="image/png" href="/images/logos/spatia.png"/>
+
+    <!-- Fonts -->
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>    
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.css" rel="stylesheet">
@@ -46,6 +52,11 @@
 </head>
 
 <body>
+    <div id="loading" class="hide">
+        <i class="fa fa-refresh fa-5x fa-spin loading-icon text-center"></i>
+        <h2 class="loading-message text-center">Spinning up the hamster...</h2>
+    </div>
+
     <div id="wrapper" class="">
 
         <!-- Sidebar -->
@@ -146,12 +157,19 @@
                             <i id="search_venues_enter_arrow" class="fa fa-arrow-right" style="position: absolute;top: 12px;right: 10px;"></i>
                             <i id="search_venues_enter_loading" class="fa fa-spinner fa-pulse" style="visibility: hidden; position: absolute;top: 12px;right: 10px;color:rgba(64,153,255, 1);"></i>
                         </div>
+                        <div id="search_text_container" class="search_places">
+                            <i class="fa fa-search" style="position: absolute;top: 12px;left: 10px;"></i>
+                            <input type="text" id="search_text" class="typeahead" placeholder="Search Singapore"/>
+                            <i id="search_text_enter_arrow" class="fa fa-arrow-right" style="position: absolute;top: 12px;right: 10px;"></i>
+                            <i id="search_text_enter_loading" class="fa fa-spinner fa-pulse" style="visibility: hidden; position: absolute;top: 12px;right: 10px;color:rgba(64,153,255, 1);"></i>
+                        </div>
                     </div>
                     <div id="map"></div>
                     <div id="fake_map" style="visbility:hidden"></div>
                     <div id="taskbar">
-                        <a id="taskbar_places_search" class="tooltips" href="#"><i id="taskbar_search_icon" class="fa fa-google fa-4x" style=""></i><span>Places Search (Hotkey: 1)</span></a>
-                        <a id="taskbar_venues_search" class="tooltips" href="#"><i id="taskbar_venues_icon" class="fa fa-foursquare fa-4x" style=""></i><span>Venues Search (Hotkey: 2)</span></a>
+                        <a id="taskbar_text_search" class="tooltips" href="#"><i id="taskbar_text_search_icon" class="fa fa-search fa-4x" style=""></i><span>Text Search (Hotkey: 1)</span></a>
+                        <a id="taskbar_places_search" class="tooltips" href="#"><i id="taskbar_search_icon" class="fa fa-google fa-4x" style=""></i><span>Places Search (Hotkey: 2)</span></a>
+                        <a id="taskbar_venues_search" class="tooltips" href="#"><i id="taskbar_venues_icon" class="fa fa-foursquare fa-4x" style=""></i><span>Venues Search (Hotkey: 3)</span></a>
                     </div>
                     <div id="legend"></div>
                     <div id="region_legend"></div>
@@ -159,6 +177,35 @@
             </div>
         </div>
         <!-- /#page-content-wrapper -->
+
+        <div id="spreadsheets-overlay" class="closed">
+            <div class="icon-bar">
+                <i class="fa fa-table fa-3x"></i>
+            </div>
+            <div class="container-fluid">
+                <div class="row nil-message hide">
+                    <h2>You currently do not have any files</h2>
+                    <p>Start using our application to gain access to data!</p>
+                </div>
+                <div class="row sheets hide">
+                    <div class="sheet-control col-sm-3 col-md-3 col-lg-2">
+                        <h4>Data Layers</h4>
+                        <i class="fa fa-refresh pull-right spreadsheets-refresh"></i>
+                    </div>
+                    <div class="sheet-content col-sm-9 col-md-9 col-lg-10">
+                        <div class="active-sheet row">
+                            <iframe></iframe>
+                        </div>
+                        <div class="active-taskbar row">
+                            <button type="button" class="btn btn-load-data pull-right">Load Layers</button>
+                            <button type="button" class="btn btn-unload-data pull-right hide">Unload Layers</button>
+                            <button type="button" class="btn btn-refresh pull-right">Refresh Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
 
     </div>
     <!-- /#wrapper -->
@@ -191,6 +238,8 @@
     <script type="js/google_places.js"></script>
     <!-- Menu Toggle Script -->
     <script src="js/action.js"></script>
+    <script src="js/spreadsheets.js"></script>
+    <script src="js/overlay.js"></script>
 
 </body>
 
