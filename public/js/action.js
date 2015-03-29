@@ -132,29 +132,54 @@ venues_categories,
 venues_hash;
 
 var submitTextSearchParameters = function(){
-  var input = $('#search_text').val();
-  var showSearchErrorMessage = function(){
-
-  };
-
-  showTextLoader(); //show loading spinner for results
-  PLACES_API.singaporeTextSearch(input,function(results,status,pagination){
-    if (status == google.maps.places.PlacesServiceStatus.OK) {
-
-      MAP.loadPlacesPointLayer(input,pagination.D,results);
-      if (pagination.hasNextPage){
-        pagination.nextPage();
-      }else{
-        hideTextLoader(); // finally done loading
-      }
-
-    }
-
-    if (status == "ZERO_RESULTS") {
-      alert('No results found');
+  var input = $('#search_text').val(),
+  masterIconURL, masterIconColor,
+  googleDone = false,
+  foursquareDone = false,
+  checkTextSearchComplete = function(){
+    if (googleDone && foursquareDone) {
+      DATA_COMBINE.cleanData(input);
+      MAP.loadCombinedPoints(input,masterIconURL,masterIconColor);
       hideTextLoader();
     }
-  });
+  };
+
+  if (MAP.POINT_CONTROLLER.HASH[input]){
+    alert('The search layer ' + input + ' already exists!');
+  }else{
+    showTextLoader(); //show loading spinner for results
+    PLACES_API.singaporeTextSearch(input,function(results,status,pagination){
+      if (status == google.maps.places.PlacesServiceStatus.OK) {
+        var iconInfo = MAP.aggregatedTextSearchPoints('google',input,pagination.D,results);
+        masterIconURL = iconInfo['url']; masterIconColor = iconInfo['color'];
+        if (pagination.hasNextPage){
+          pagination.nextPage();
+        }else{
+          googleDone = true;
+        }
+
+      }
+
+      if (status == "ZERO_RESULTS") {
+        alert('No results found');
+        googleDone = true;
+      }
+      checkTextSearchComplete();
+    });
+
+    VENUES_API.singaporeVenuesTextSearch(input,function(err,response){
+      if (err) {
+        alert('Unable to load layer. Please try again later.');
+      }else{
+        var iconInfo = MAP.aggregatedTextSearchPoints('foursquare',input,undefined,response,masterIconURL);
+        masterIconURL = iconInfo['url']; masterIconColor = iconInfo['color'];
+        //MAP.loadVenuesProportionalLayer(input,response,groupColor);
+        //MAP.loadVenuesChoroplethLayer(input,response,groupColor);
+      }
+      foursquareDone = true;
+      checkTextSearchComplete();
+    });
+  }
 }
 
 var submitSearchParameters = function(){
@@ -187,17 +212,17 @@ var submitVenuesSearchParameters = function(){
   };
 
   if ($.inArray(input, venues_categories) > -1){
-      showVenuesLoader(); //show loading spinner for results
-      VENUES_API.singaporeVenuesSearch(input,function(err,response){
-        if (err) {
-          alert('Unable to load layer. Please try again later.');
-        }else{
-          var groupColor = MAP.loadVenuesPointLayer(input,response);
-          MAP.loadVenuesProportionalLayer(input,response,groupColor);
-          MAP.loadVenuesChoroplethLayer(input,response,groupColor);
-        }
-        hideVenuesLoader();
-      });
+    showVenuesLoader(); //show loading spinner for results
+    VENUES_API.singaporeVenuesSearch(input,function(err,response){
+      if (err) {
+        alert('Unable to load layer. Please try again later.');
+      }else{
+        var groupColor = MAP.loadVenuesPointLayer(input,response);
+        MAP.loadVenuesProportionalLayer(input,response,groupColor);
+        MAP.loadVenuesChoroplethLayer(input,response,groupColor);
+      }
+      hideVenuesLoader();
+    });
   }
 }
 

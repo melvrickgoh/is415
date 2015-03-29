@@ -343,6 +343,33 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     return iconColor;
   }
 
+  this.loadCombinedPoints = function(input,iconURL,iconColor){
+    console.log(DATA_COMBINE.getAggregatedData(input))
+    POINT_CONTROLLER.HASH[input] = {
+      "name"    : input,
+      "layer"   : this.createCombinedPointLayer(DATA_COMBINE.getAggregatedData(),iconURL,iconColor)//generate layer here
+    };
+    POINT_CONTROLLER.GROUP.addLayer(POINT_CONTROLLER.HASH[input]['layer']);
+    this.SIDEBAR.addPointlayerSubLink(input,input,true,undefined,iconURL,'rgba(0,0,0,0)');
+  }
+
+  this.aggregatedTextSearchPoints = function(type,input,googleToken,results){
+    var pointLayerPayload = POINT_CONTROLLER.HASH[input],
+    iconColor = 'rgba(255,255,255,0)',
+    iconURL;
+
+    if (type == 'google') {
+      if (!iconURL) {
+        iconURL = results[0].icon;
+        LOADING_URL_MOMENT = iconURL;
+      }
+    }
+
+    DATA_COMBINE.loadData(input,type,results,googleToken);
+
+    return {'color': iconColor, 'url':LOADING_URL_MOMENT };
+  }
+
   this.loadPlacesPointLayer = function(input,token,results){
     var pointLayerPayload = POINT_CONTROLLER.HASH[input],
     iconURL = results[0].icon;
@@ -374,12 +401,30 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     return L.layerGroup(points);
   }
 
+  this.createCombinedPointLayer = function(combinedStore,iconURL,iconColor){
+    var combinedKeys = Object.keys(combinedStore),
+    points = [];
+    for (var i in combinedKeys) {
+      var key = combinedKeys[i],
+      dataPacket = combinedStore[key];
+
+      points.push(this.createCombinedPointMarker(dataPacket,iconURL,iconColor));
+    }
+    return L.layerGroup(points);
+  }
+
   this.createVenuesPointLayer = function(input,payloadGroup,iconColor){
     var points = [];
     for (var i in payloadGroup) {
       points.push(this.createVenuePointMarker(input,payloadGroup[i],iconColor));
     }
     return L.layerGroup(points);
+  }
+
+  this.addToPointLayerVenue = function(input,iconColor,payloadGroup,layergroup,iconURL){
+    for (var i in payloadGroup) {
+      layergroup.addLayer(this.createVenuePointMarker(input,payloadGroup[i],iconColor,iconURL));
+    }
   }
 
   this.addToPointLayer = function(payloadGroup,layergroup){
@@ -394,7 +439,7 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
       lng       : payload.geometry.location.D,
       id        : payload.id,
       name      : payload.name,
-      address   : payload.vicinity,
+      address   : payload.formatted_address,
       photo     : payload.photos && payload.photos[0] ? payload.photos[0].getUrl : ''
     }
   }
@@ -405,9 +450,59 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
       lng       : payload.location.lng,
       id        : payload.id,
       name      : payload.name,
-      address   : payload.location.address,
+      address   : payload.location.address || '',
       stats     : payload.stats
     }
+  }
+
+  this.createCombinedPointMarker = function(payload,iconURL,iconColor){
+    var marker = L.marker([payload.lat,payload.lng],{icon: this.generatePlacePointIcon(iconURL,iconColor)});
+    
+    var content = '<h4>' + payload.name + '<\/h4>' + '<p>Address: ' + payload.formatted_address + '<br \/>';
+    
+    content += 'Source: ' + payload.type + '<br \/>';
+
+    var payloadAttrKeys = Object.keys(payload);
+    for (var i in payloadAttrKeys) {
+      var attrKey = payloadAttrKeys[i],
+      attribute = payload[attrKey];
+      console.log(attribute);
+
+      switch(attrKey){
+        case 'lat'                :
+        case 'lng'                :
+        case 'name'               :
+        case 'type'               :
+        case 'formatted_address'  :
+        case 'id'                 :
+        case 'place_id'           :
+        case 'icon'               :
+          break;
+        case 'rating'             :
+          var rating = payload.rating
+          content += 'Rating: ' + rating + '<br \/>';
+          break;
+        case 'contact'            :
+          content += 'Rating: ' + payload.contact + '<br \/>';
+          break;
+        case 'checkinsCount'      :
+          content += 'Check-Ins: ' + payload.checkinsCount + '<br \/>';
+          break;
+        case 'tipsCount'          :
+          content += 'Tips: ' + payload.tipsCount + '<br \/>';
+          break;
+        case 'usersCount'         :
+          content += 'Users: ' + payload.usersCount + '<br \/>';
+          break;
+        default:
+          content += attrKey + ': ' + payload[attribute] + '<br \/>';
+      }
+    }
+
+    content += '<\/p>';
+    marker.bindPopup(content);
+
+    return marker;
   }
 
   this.createPlacePointMarker = function(payload){
@@ -433,10 +528,12 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     return marker;
   }
 
-  this.createVenuePointMarker = function(input,payload,iconColor){
+  this.createVenuePointMarker = function(input,payload,iconColor,iconURL){
     var info = this.extractVenuePointData(payload);
-    var icon = this.VENUES_API.venues_hash[input].icon,
-    iconURL = icon.prefix + '32' + icon.suffix;
+    if (this.VENUES_API.venues_hash[input]){
+      var icon = this.VENUES_API.venues_hash[input].icon,
+      iconURL = icon.prefix + '32' + icon.suffix;
+    }
     var marker = L.marker([info.lat,info.lng],{icon: this.generatePlacePointIcon(iconURL,iconColor)});
     marker.bindPopup(this.generateVenuePopupContent(payload));
 

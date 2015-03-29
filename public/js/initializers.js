@@ -5,3 +5,5 @@ fake_google_map = new google.maps.Map(document.getElementById('fake_map'),{
     center: fake_google_map_location,
     zoom: 15
 });
+
+var LOADING_URL_MOMENT;

@@ -30,7 +30,8 @@
     "dotenv": "0.5.1",
     "node-uuid": "1.4.3",
     "s3":"4.4.0",
-    "google-spreadsheets":"0.4.1"
+    "google-spreadsheets":"0.4.1",
+    "geolib":"2.0.14 "
   },
   "engines": {
     "node": "0.10.x"

@@ -318,9 +318,8 @@ function getAccessToken(code, callback) {
     // request access token
   	oauth2Client.getToken(code, function(err, tokens) {
   		if (err) {
-  			console.log(err);
-	        console.log('An error occured', err);
-	        return;
+	      console.log('An error occured', err);
+	      return;
 		}
   	    // set tokens to the client
    	 	// TODO: tokens should be set by OAuth2 client.
