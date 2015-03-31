@@ -473,6 +473,19 @@ main_router.route('/api/spreadsheet/load')
 		});
 	});
 
+main_router.route('/api/geoprocess/clean')
+	.post(function(req,res){
+		var google = req.body.google,
+		foursquare = req.body.foursquare;
+		console.log(google);
+		console.log(foursquare);
+		/*var googleObj = JSON.parse(google);
+		console.log(googleObj.length);
+		var foursquareObj = JSON.parse(foursquare);
+		console.log(foursquareObj.length);*/
+		res.json('data received');
+	});
+
 main_router.route('/api/data/sg_area_topo')
 	.all(function(req,res){
 		sg_area_topo = StaticSpatial.sg_region_topo();
