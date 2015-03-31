@@ -43,9 +43,30 @@
 	
 	<script>
 	window.onload = function(){
-		document.getElementById('user-uploaded').innerHTML = '<ol><li>html data</li></ol>';
-	
-	
+
+        if(!getURLParameter('user-uploaded')){
+            displayUserPoints();
+        }
+
+		/**
+		if(getURLParameter('user-uploaded') != null){
+			displayUserPoints();
+		}
+			**/	
+		/**
+		var hydro = new L.LayerGroup();
+		L.geoJson(hydro_s, {style: hydrosStyle}).addTo(hydro);
+		
+		document.getElementById('user-uploaded').innerHTML = '<li class="sidebar-brand">Uploaded Layer</li>'+
+				'<li>'+
+                    '<a href="#" id="user_uploaded_point" style="transform: translate(-20px,0px);width:300px;">'+
+                        '<i id="base_control_icon_google" class="fa fa-google fa-2x base_control_google_icon" style="transform:translate(0px,8px)"></i>'+
+                        'Google Maps'+
+                    '</a>'+
+                '</li>';
+				
+		}
+		**/
 	};
 	</script>
 

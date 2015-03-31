@@ -715,6 +715,18 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     return L.layerGroup(circles);
   }
 
+  //insert useruploaded points to map WIP
+  function displayUserPoints(address) {
+      XHR(address,function(response){
+      var planning_geojson = JSON.parse(response);
+      var planning_geo_layer = L.geoJson(planning_geojson,{
+        onEachFeature: onEachRegionPopup
+      });
+      //layerControl.addOverlay(planning_geo_layer,'Planning Chloropeth');
+      var layers = planning_geo_layer.getLayers();
+    });
+  }
+
   this.loadVenuesPointLayer = function(input,results){
     var icon = this.VENUES_API.venues_hash[input].icon,
     iconURL = icon.prefix + '32' + icon.suffix,

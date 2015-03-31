@@ -55,51 +55,72 @@ var app         =    express();
 var bodyParser = require('body-parser');
 var multer = require('multer');         
 var fs = require("fs");
+var userUploaded;
+var pointData = false;
 
 // these statements config express to use these modules, and only need to be run once
 app.use(bodyParser.json());         
 app.use(bodyParser.urlencoded({ extended: true }));          
 app.use(multer());
-
-// set up your routes                                    
+                                
 
 app.post('/upload/geoJSON', function(req, res) {
-	console.log(req.body);
     console.log(req.files.geojson);
-	console.log(req.files.geojson.path);
 	var geojsonType = req.body.mySelect;
 	var tmp_path = req.files.geojson.path;
+	var filename=req.files.geojson.name.split(".");
 	// set where the file should actually exists - in this case it is in the "images" directory
 	if (geojsonType == 'point'){
 		//read data and display
+		console.log("point @ :" + tmp_path);
+		fs.readFile(tmp_path, 'utf8', function(err, data) {
+		  if (err) throw err;
+		  userUploaded = data;
+		  dynamicUserAPI(userUploaded, filename[0]);
+		});
 		
 	} else if (geojsonType == 'polygon'){
 		//upload to google drive
-		GeoUploadController.prototype.uploadToS3 = function(fileData,userGoogleID,callback)
-		
+		//GeoUploadController.prototype.uploadToS3 = function(fileData,userGoogleID,callback);
+		console.log("polygon");
 	}
 	
-	/**
-    var target_path = './public/uploads/' + req.files.geojson.name;
-	// move the file from the temporary location to the intended location
-    fs.rename(tmp_path, target_path, function(err) {
-        if (err) throw err;
-        // delete the temporary file, so that the explicitly set temporary upload dir does not get filled with unwanted files
-        fs.unlink(tmp_path, function() {
-            if (err) throw err;
-            res.send('File uploaded to: ' + target_path + ' - ' + req.files.geojson.size + ' bytes');
-        });
-	});
-	**/
+	backURL=req.header('Referer') || '/';
+	//console.log(req.files.fileUploaded.name.split("."));
+	backURL.concat(filename[0]);
+	console.log("backURL: "+backURL+", filename: "+filename[0]);
+	
+	var oldURL = backURL;
+	var index = 0;
+	var newURL = oldURL;
+	index = oldURL.indexOf('?');
+	if(index == -1){
+		index = oldURL.indexOf('#');
+	}
+	if(index != -1){
+		newURL = oldURL.substring(0, index);
+	}
+
+	res.redirect(newURL+'?userfilepresent=true&userfile='+filename[0]);
 	
 });                                     
+
+function dynamicUserAPI(userUpload, filename) {
+		main_router.route('/api/data/'+filename)
+		.all(function(req,res){
+			res.send(userUpload);
+		});
+}
 
 app.listen(3000,function(){
     console.log("Working on port 3000");
 });                     
 
-module.exports = app;  
+module.exports = app; 
 
+
+
+//upload end
 /**
 var fileupload = require('fileupload').createFileUpload('/uploadDir').middleware
 
@@ -164,11 +185,6 @@ app.post('/upload/geoJSON',fileupload, function(req, res) {
 		});
 	**/
 	// end unverified code
- 
-
-//upload end
-
-
 
 
 app.set('views', 'views');  // Specify the folder to find templates
@@ -474,13 +490,8 @@ main_router.route('/api/data/mrt')
 		mrt_geojson = StaticSpatial.sg_mrt_geo();
 		res.send(mrt_geojson);
 	});
-/**
-main_router.route('/api/data/mrt')
-	.all(function(req,res){
-		mrt_geojson = StaticSpatial.sg_mrt_geo();
-		res.send(mrt_geojson);
-	});
-**/
+
+	
 main_router.route('/api/iron/get')
 	.all(function(req,res){
 		cache.get(req.query.key,function(err,response){
