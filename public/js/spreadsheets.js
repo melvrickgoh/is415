@@ -1,4 +1,10 @@
 function Spreadsheets () {
+	var dialog_worksheets_refresh = $('#dialogSpreadsheetsRefresh'),
+	dialog_worksheets_refresh_msg = $('#dialogSpreadsheetsRefreshMsg');
+	
+	this.dialog_worksheets_refresh = dialog_worksheets_refresh;
+	this.dialog_worksheets_refresh_msg = dialog_worksheets_refresh_msg;
+
 	this.name = name || 'monkey';
 
   this.overlay = $('#spreadsheets-overlay');
@@ -21,6 +27,19 @@ function Spreadsheets () {
   this.spreadsheets_refresh_button.click(this.API.refreshDrive); //refreshing of user drive info
   this.active_layer_refresh_button.click(this.API.refreshLayer);//refresh front end loading of user data
   this.active_layer_load_data_button.click(this.API.loadLayer);//load layer on the front end
+
+  //refresh workbooks at dialog level
+  function _refreshWorkbooks(){
+    dialog_worksheets_refresh.addClass('fa-spin');
+    dialog_worksheets_refresh.addClass('blue-twitter');
+
+    dialog_worksheets_refresh_msg.removeClass('hide');
+    dialog_worksheets_refresh_msg.addClass('show');
+
+    SPREADSHEETS.API.refreshDrive();
+  }
+  dialog_worksheets_refresh.click(_refreshWorkbooks);
+
 }
 
 Spreadsheets.prototype.toggleOverlay = function(e){
@@ -110,6 +129,7 @@ Spreadsheets.prototype.emptySheetControls = function(){
 
 Spreadsheets.prototype.generateNewSheetControls = function(spreadsheets){
 	var last_control;
+	SPREADSHEETS_UI.loadWorkbooks(spreadsheets);
 	for (var i in spreadsheets) {
 		var sheet = spreadsheets[i];
 		last_control = this.generateNewSheetControl(sheet.id,sheet.title,sheet.alternateLink);
@@ -147,12 +167,71 @@ Spreadsheets.prototype.resizeSpreadsheetsUI = function(){
 Spreadsheets.prototype.refreshLayer = function(){
 	var fileid = SPREADSHEETS.active_layer_refresh_button.attr('fileid');
 	SPREADSHEETS.API.getSheet(fileid,function(spreadsheet){
-		
+		var processed_layers = SPREADSHEETS._postProcessSheetData(spreadsheet);
+		//reload layers render
+
+		MAP.reset();
+		for (var i = 0; i<processed_layers.length; i++) {
+			var layer = processed_layers[i];
+			MAP.loadSpreadsheetCombinedPoints(layer.title,layer.iconURL,layer.data,'rgba(255,255,255,0.5)');
+		}
 	});
+}
+
+Spreadsheets.prototype._postProcessSheetData = function(spreadsheet){
+	var layers = [],
+	worksheets = spreadsheet['worksheets'],
+	worksheetKeys = Object.keys(worksheets);
+
+	for (var i = 0; i<worksheetKeys.length; i++) {
+		var key = worksheetKeys[i];
+		var worksheet = worksheets[key];
+		var cells = worksheet['cells'],
+		payload = {
+			id: worksheet['id'],
+			title: worksheet['title'],
+			iconURL: '',
+			data: {}
+		};
+
+		for (var j = 0; j<cells.length; j++ ) {
+			var cell = cells[j];
+			var cellAttrs = Object.keys(cell),
+			cellID,
+			pointData = {};
+			for (var k =0; k<cellAttrs.length; k++ ) {
+				var attr = cellAttrs[k];
+				switch(attr){
+					case 'rating':
+					case 'lat':
+					case 'lng':
+					case 'tipsCount':
+					case 'checkinsCount':
+					case 'usersCount':
+						pointData[attr] = parseFloat(cell[attr]);
+						break;
+					default:
+						pointData[attr] = cell[attr];
+				}
+
+				if (attr == 'icon' && cell[attr] && cell[attr].length > 1) {
+					payload.iconURL = cell[attr];
+				}
+				if (attr == 'id'){
+					cellID = cell[attr];
+				}
+			}
+			payload.data[cellID] = pointData;
+		}
+
+		layers.push(payload);
+	}
+	return layers;
 }
 
 Spreadsheets.prototype.loadLayer = function(){
 	//action to load layers data here
+
 }
 
 /*IMPORTANT: For classing API methods of sheets in */
@@ -165,6 +244,10 @@ Spreadsheets.prototype.API.refreshDrive = function(){
 		SPREADSHEETS.generateNewSheetControls(user.data_spreadsheets);
 		//done refreshing and rendering information
 		SPREADSHEETS.spreadsheets_refresh_button.removeClass('fa-spin');
+		SPREADSHEETS.dialog_worksheets_refresh.removeClass('fa-spin');
+		SPREADSHEETS.dialog_worksheets_refresh.removeClass('blue-twitter');
+		SPREADSHEETS.dialog_worksheets_refresh_msg.addClass('hide');
+		SPREADSHEETS.dialog_worksheets_refresh_msg.removeClass('show');
 	});
 }
 
@@ -175,6 +258,25 @@ Spreadsheets.prototype.API.getSheet = function(sheetId,callback) {
 		else {callback(results);}
 		OVERLAY.hide();
 	});
+}
+
+Spreadsheets.prototype.API.storeDataToDrive = function(){
+	OVERLAY.show('Saving your data to your Google Spreadsheet now');
+	var sheetValues = SPREADSHEETS_UI.worksheetFormValues();
+	var payload = {
+		sheet: sheetValues['worksheet'],
+		workbook: sheetValues['workbook'],
+		data: LUNR.aggregated_store
+	};
+	XHRP('/api/spreadsheet/save',JSON.stringify(payload),function(response){
+		var res = JSON.parse(response);
+		if (res.error) { //package has error
+			SPREADSHEETS_UI.showErrorMessage(res.message);
+		} else { //package returns with the data now stored on the spreadsheet
+			OVERLAY.hide();
+		}
+	});
+
 }
 
 function _SheetXHR(url,callback){

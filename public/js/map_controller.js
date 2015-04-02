@@ -28,6 +28,11 @@ var SUBGROUP_MAP_CONTROLLER = function(map,type){
   //initialization
   map.addLayer(this.GROUP);
 
+  this.reset = function(){
+    this.GROUP.clearLayers();
+    this.HASH = {};
+  }
+
   this.hideAll = function(){
     map.removeLayer(this.GROUP);
   }
@@ -126,6 +131,12 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     this.loadPlanningRegions(this.map,this.onEachRegionPopup);
     //init MRT polyline layer
     this.loadMRTNetwork();
+  }
+
+  this.reset = function(){
+    this.POINT_CONTROLLER.reset();
+    this.PROPORTIONAL_CONTROLLER.reset();
+    this.CHLOROPETH_CONTROLLER.reset();
   }
 
   this.setSidebar = function(sidebar_controller){
@@ -343,8 +354,16 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     return iconColor;
   }
 
+  this.loadSpreadsheetCombinedPoints = function(title,iconURL,spreadsheetData,iconColor){
+    POINT_CONTROLLER.HASH[title] = {
+      "name"    : title,
+      "layer"   : this.createCombinedPointLayer(spreadsheetData,iconURL,iconColor)//generate layer here
+    };
+    POINT_CONTROLLER.GROUP.addLayer(POINT_CONTROLLER.HASH[title]['layer']);
+    this.SIDEBAR.addPointlayerSubLink(title,title,true,undefined,iconURL,'rgba(0,0,0,0)');
+  }
+
   this.loadCombinedPoints = function(input,iconURL,iconColor){
-    console.log(DATA_COMBINE.getAggregatedData(input))
     POINT_CONTROLLER.HASH[input] = {
       "name"    : input,
       "layer"   : this.createCombinedPointLayer(DATA_COMBINE.getAggregatedData(),iconURL,iconColor)//generate layer here
@@ -466,7 +485,6 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     for (var i in payloadAttrKeys) {
       var attrKey = payloadAttrKeys[i],
       attribute = payload[attrKey];
-      console.log(attribute);
 
       switch(attrKey){
         case 'lat'                :

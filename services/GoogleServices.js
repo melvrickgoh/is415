@@ -6,8 +6,9 @@ SERVICE_CLIENT_KEY = process.env.GOOGLE_CLIENT_KEY;
 SERVICE_ID = process.env.SERVICE_CLIENT_ID;
 SERVICE_EMAIL = process.env.SERVICE_CLIENT_EMAIL;
 
-var googleapis = require('googleapis'),
-GoogleSpreadsheets = require("google-spreadsheets");
+var googleapis = require("googleapis"),
+GoogleSpreadsheets = require("google-spreadsheets"),
+EditSpreadsheet = require("edit-google-spreadsheet");
 var OAuth2Client = googleapis.OAuth2Client;
 var CLIENT_ID = process.env.GOOGLE_BROWSER_CLIENT_ID;
 var CLIENT_SECRET = process.env.GOOGLE_BROWSER_CLIENT_SECRET;
@@ -150,6 +151,122 @@ GoogleServices.prototype.Spreadsheets.load = function(sheetId,tokens,callback){
   });
 }
 
+GoogleServices.prototype.Spreadsheets.edit = function(sheetId,worksheetId,tokens,callback){
+	console.log(tokens);
+	console.log(sheetId);
+	console.log(worksheetId);
+
+	EditSpreadsheet.load({
+		debug: true,
+    spreadsheetId: sheetId,
+    worksheetName: worksheetId,
+    accessToken: {
+      type: 'Bearer',
+      token: tokens['access_token']
+    }
+	}, function sheetReady(err, spreadsheet) {
+	  if(err) callback(false,err);
+	  console.log(spreadsheet);
+	  var worksheets = spreadsheet.raw['worksheets'];
+	  for (var i in worksheets) {
+	  	var w = worksheets[i];
+	  }
+	  spreadsheet.receive(function(err, rows, info) {
+      if (err) {
+        throw err;
+      }
+      console.dir(rows);
+      console.dir(info);
+    });
+	});
+}
+
+GoogleServices.prototype.Spreadsheets.save = function(sheetId,worksheetName,data,tokens,callback){
+	EditSpreadsheet.load({
+		debug: true,
+    spreadsheetId: sheetId,
+    worksheetName: worksheetName,
+    accessToken: {
+      type: 'Bearer',
+      token: tokens['access_token']
+    }
+	}, function sheetReady(err, spreadsheet) {
+	  if(err) callback(false,err);
+
+	  if (spreadsheet == null || spreadsheet == undefined) {
+	  	callback(false,"Spreadsheet not found! Try entering the title again or create a fresh sheet.");
+	  } else {
+		  spreadsheet.receive(function(err, rows, info) {
+	      if (err) {
+	        throw err;
+	      }
+	      if (info.totalRows > 0) {
+	      	callback(false,"This spreadsheet isn't empty. Please create another sheet and try again.");
+	      }else{
+	      	var savePackage = _generateSpreadsheetDataPackage(data);
+	      	
+	      	spreadsheet.add(savePackage);
+	      	spreadsheet.send(function(err){
+	      		if(err) throw err;
+      			callback(true,"Spreadsheet successfully updated");
+	      	});
+	      	
+	      }
+	    });
+	  }
+
+	});
+}
+
+function _generateSpreadsheetDataPackage(data){
+	var dataKeys = Object.keys(data),
+	first = data[dataKeys[0]];
+
+	var dataPackage = {
+		1:_generateSpreadsheetHeader()
+	};
+	//generate file
+	for (var i = 0; i<dataKeys.length; i++) {
+		var key = dataKeys[i],
+		payload = data[key];
+		dataPackage[i+2] = _generateSpreadsheetPayload(payload);
+	}
+
+	return dataPackage;
+}
+
+function _generateSpreadsheetPayload(payload){
+	var attrs = Object.keys(payload),
+	packageS = {}
+	headers = ['name','formatted_address','type','rating','checkinsCount','tipsCount','usersCount','icon','lat','lng','place_id','id','contact'];
+
+	for (var i = 0; i<headers.length; i++) {
+		var header = headers[i],
+		payloadValue = payload[header];
+
+		switch(header){
+			case 'rating':
+			case 'checkinsCount':
+			case 'tipsCount':
+			case 'usersCount':
+				packageS[i+1] = payloadValue || 0;
+				break;
+			default:
+				packageS[i+1] = payloadValue || '';
+		}
+	}
+	return packageS;
+}
+
+function _generateSpreadsheetHeader(){
+	var headers = ['name','formatted_address','type','rating','checkinsCount','tipsCount','usersCount','icon','lat','lng','place_id','id','contact'];
+	var headerload = {};
+	for (var i = 0; i<headers.length; i++) {
+		headerload[i+1] = headers[i];
+	}
+	return headerload;
+}
+
 /*
 * aggregate point data content
 */
@@ -159,6 +276,7 @@ function _spreadsheetsAggregateData(spreadsheet,callback){
 	
 	for (var i in worksheets){
 		var worksheet = worksheets[i];
+		console.log(worksheet);
 		worksheetsResponse[worksheet.id] = {
 			id: worksheet.id,
 			title: worksheet.title

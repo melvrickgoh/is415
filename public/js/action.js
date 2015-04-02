@@ -30,6 +30,7 @@ function showTextSearch(searchContainer){
 function hideTextSearch(searchContainer){
   $('#taskbar_text_search_icon').css('color','rgba(250,70,0,0.7)');
   searchContainer.css('visibility','hidden');
+  $('#search_text_enter_arrow').css('visibility','hidden');
 }
 
 function showPlacesSearch(searchContainer){
@@ -132,17 +133,40 @@ venues_categories,
 venues_hash;
 
 var submitTextSearchParameters = function(){
+  //hide text search bar
+  hideTextSearch($('#search_text_container'));
+
   var input = $('#search_text').val(),
   masterIconURL, masterIconColor,
   googleDone = false,
   foursquareDone = false,
   checkTextSearchComplete = function(){
     if (googleDone && foursquareDone) {
+      OVERLAY.show('Aggregating and combining results');
       DATA_COMBINE.cleanData(input);
       MAP.loadCombinedPoints(input,masterIconURL,masterIconColor);
+      var postSavingAction = function(){
+        //KDE ACTION HERE
+      }
+      SPREADSHEETS_UI.setTitlesWithResults(input,Object.keys(LUNR.aggregated_store).length);
+      SPREADSHEETS_UI.setSearchDoneActionFlow(function(){
+        //yes to saving data
+        console.log('user decides to save data');
+      },postSavingAction);
+
+      SPREADSHEETS_UI.setSaveActionTrigger(function(){
+        SPREADSHEETS.API.storeDataToDrive();
+      });
+      SPREADSHEETS_UI.setCancelActionTrigger(postSavingAction);
+
+      OVERLAY.hide();
+
+      SPREADSHEETS_UI.showSearchDoneDialog();
       hideTextLoader();
     }
   };
+
+  OVERLAY.show('Searching Google and Foursquare for ' + input);
 
   if (MAP.POINT_CONTROLLER.HASH[input]){
     alert('The search layer ' + input + ' already exists!');

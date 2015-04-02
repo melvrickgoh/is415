@@ -143,6 +143,58 @@
         </div>
         <!-- /#page-content-wrapper -->
 
+        <div id="searchLayerLoad" class="modal">
+          <div class="modal-dialog">
+            <div class="modal-content background08 fontOpenSans">
+              <div class="modal-header blue-dialog font700">
+                <h4 class="modal-title white">Saving your Search Data</h4>
+              </div>
+              <div class="modal-body">
+                <div id="searchLayerWarningMessage" class="alert alert-danger hide warning-dialog white" role="alert">The spreadsheet is not empty</div>
+                <p>
+                    Select the workbook and worksheet to append your search data to. You must enter the right worksheet name in the workbook. Take this opportunity to create a new worksheet to collect the data.
+                </p>
+                <span><b>Workbook to Append</b></span>
+                <span id="dialogSpreadsheetsRefreshMsg" class="hide blue-twitter" style="position:absolute;right:20px">refreshing workbooks ... </span>
+                <i class="fa fa-refresh pull-right spreadsheets-refresh" id="dialogSpreadsheetsRefresh"></i>
+                </br>
+                </br>
+                <select id="searchLayerWorkbookName" name="Workbook Name" class="background05 width100p height30 lh15 pl10 pr10">
+                </select>
+                </br>
+                </br>
+                <span><b>Worksheet to Load</b></span>
+                </br>
+                </br>
+                <input type="text" class="background05 width100p height30 pl10 pr10 height30 lh15" placeholder="Worksheet to append to" name="Worksheet Name" id="searchLayerSheetName" />
+              </div>
+              <div class="modal-footer ta-center">
+                <button type="button" id="cancelSaveToDriveBtn" class="btn btn-default br0 bc0 width180px" data-dismiss="modal" data-toggle="modal" data-target="#searchDoneDialog">Cancel Save to Drive</button>
+                <button id="saveToDriveBtn" type="button" class="btn btn-primary br0 bc0 width180px blue-dialog08">Save to Drive</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="searchDoneDialog" class="modal">
+          <div class="modal-dialog">
+            <div class="modal-content background08 fontOpenSans">
+              <div class="modal-header blue-dialog font700">
+                <h4 class="modal-title white">Search Complete!</h4>
+              </div>
+              <div class="modal-body">
+                <p>
+                    We're done searching your data. Now we're about to store your data into a spreadsheet. Would you like to store your searched data?
+                </p>
+              </div>
+              <div class="modal-footer ta-center">
+                <button type="button" class="nosaveBtn btn btn-default br0 bc0 width180px" data-dismiss="modal" data-toggle="modal" data-target="#searchDoneDialog">Do Not Save</button>
+                <button type="button" class="saveBtn btn btn-primary br0 bc0 width180px blue-dialog08">Save to Drive</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
         <div id="spreadsheets-overlay" class="closed">
             <div class="icon-bar">
                 <i class="fa fa-table fa-3x"></i>
@@ -210,6 +262,7 @@
     <script src="js/foursquare_venues.js"></script>
     <script src="js/lunr.js"></script>
     <script src="js/data_aggregator.js"></script>
+    <script src="js/spreadsheets_ui.js"></script>
 
     <!-- Map Controls Script (Must load support scripts first) -->
     <script src="js/map_controller.js"></script>

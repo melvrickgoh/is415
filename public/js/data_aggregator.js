@@ -76,7 +76,6 @@ DataAggregator.prototype.matchFoursquareData = function(payload){
 				//match google and foursquare items
 				if (itemRef.score > 0.5) {
 					var isHighlySimilar = DATA_COMBINE.matchFoursquareDistance(item,foursquare);
-					console.log(isHighlySimilar);
 					if (isHighlySimilar) { //if highly similar within 70m
 						LUNR.appendFoursquareAggregate(item.id,foursquare);
 						break;
@@ -92,7 +91,7 @@ DataAggregator.prototype.matchFoursquareData = function(payload){
 
 DataAggregator.prototype.matchFoursquareDistance = function(googlePayload,foursquarePayload){
 	var distanceDiff = new L.latLng(googlePayload.geometry.location.k, googlePayload.geometry.location.D).distanceTo(new L.latLng(foursquarePayload.location.lat, foursquarePayload.location.lng));
-	console.log(googlePayload.name + ' .v ' + foursquarePayload.name + ' > ' + distanceDiff);
+	//console.log(googlePayload.name + ' .v ' + foursquarePayload.name + ' > ' + distanceDiff);
 	return distanceDiff < 71;
 }
 

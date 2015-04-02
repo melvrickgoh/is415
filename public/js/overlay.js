@@ -28,13 +28,17 @@ Overlay.prototype.rollingMessage = function(){
 	},4500);
 }
 
-Overlay.prototype.show = function(){
+Overlay.prototype.show = function(message){
 	OVERLAY.overlay.removeClass('hide');
-	OVERLAY.messageInterval = OVERLAY.rollingMessage();
+	if (message) {
+		OVERLAY.message.html(message);
+	} else {
+		OVERLAY.messageInterval = OVERLAY.rollingMessage();
+	}
 }
 
 Overlay.prototype.hide = function(){
-	clearInterval(OVERLAY.messageInterval);
+	if (OVERLAY.messageInterval) {clearInterval(OVERLAY.messageInterval);}
 	OVERLAY.overlay.addClass('hide');
 }
 
