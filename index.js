@@ -53,7 +53,9 @@ app.set('views', 'views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');
 app.set('port', (process.env.PORT || 5000));
 
-app.use(bodyParser()); 
+//app.use(bodyParser()); 
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(cookieParser());
 app.use(session({
 	secret:process.env.EXPRESS_SESSION_SECRET
@@ -333,6 +335,64 @@ main_router.route('/api/spreadsheet/load')
 				});
 			}
 		});
+	});
+
+main_router.route('/api/spreadsheet/edit')
+	.all(function(req,res){
+		var sheetId = req.query.id,
+		worksheetId = req.query.wid,
+		userTokens = req.session.authorization['tokens'];
+	
+		GoogleAPIs.Spreadsheets.edit(sheetId,worksheetId,userTokens,function(isSuccess,spreadsheet){
+			if (isSuccess) {
+				res.json(spreadsheet);
+			}else{
+				res.json({
+					error: true,
+					err: spreadsheet
+				});
+			}
+		});
+	});
+
+
+main_router.route('/api/spreadsheet/save')
+	.post(function(req,res){
+		var worksheetName = req.body.sheet,
+		workbookId = req.body.workbook,
+		data = req.body.data,
+		userTokens = req.session.authorization['tokens'];
+
+		if (!userTokens) {
+			res.json({
+				error: true,
+				message: 'Invalid google authentication. Please login and try again'
+			})
+		}
+
+		GoogleAPIs.Spreadsheets.save(workbookId,worksheetName,data,userTokens,function(isSuccess,results){
+			if (isSuccess) {
+				res.json({
+					error:false
+				});
+			} else {
+				res.json({
+					error: true,
+					message: results
+				});
+			}
+		});
+	});
+
+main_router.route('/api/geoprocess/clean')
+	.post(function(req,res){
+		var google = req.body.google,
+		foursquare = req.body.foursquare;
+		/*var googleObj = JSON.parse(google);
+		console.log(googleObj.length);
+		var foursquareObj = JSON.parse(foursquare);
+		console.log(foursquareObj.length);*/
+		res.json('data received');
 	});
 
 main_router.route('/api/data/sg_area_topo')
