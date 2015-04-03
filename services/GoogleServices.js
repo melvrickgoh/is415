@@ -152,9 +152,6 @@ GoogleServices.prototype.Spreadsheets.load = function(sheetId,tokens,callback){
 }
 
 GoogleServices.prototype.Spreadsheets.edit = function(sheetId,worksheetId,tokens,callback){
-	console.log(tokens);
-	console.log(sheetId);
-	console.log(worksheetId);
 
 	EditSpreadsheet.load({
 		debug: true,
@@ -166,7 +163,6 @@ GoogleServices.prototype.Spreadsheets.edit = function(sheetId,worksheetId,tokens
     }
 	}, function sheetReady(err, spreadsheet) {
 	  if(err) callback(false,err);
-	  console.log(spreadsheet);
 	  var worksheets = spreadsheet.raw['worksheets'];
 	  for (var i in worksheets) {
 	  	var w = worksheets[i];
@@ -203,7 +199,7 @@ GoogleServices.prototype.Spreadsheets.save = function(sheetId,worksheetName,data
 	      if (info.totalRows > 0) {
 	      	callback(false,"This spreadsheet isn't empty. Please create another sheet and try again.");
 	      }else{
-	      	var savePackage = _generateSpreadsheetDataPackage(data);
+	      	var savePackage = _generateSpreadsheetDataPackage(info,data);
 	      	
 	      	spreadsheet.add(savePackage);
 	      	spreadsheet.send(function(err){
@@ -218,18 +214,19 @@ GoogleServices.prototype.Spreadsheets.save = function(sheetId,worksheetName,data
 	});
 }
 
-function _generateSpreadsheetDataPackage(data){
+function _generateSpreadsheetDataPackage(info,data){
 	var dataKeys = Object.keys(data),
 	first = data[dataKeys[0]];
 
 	var dataPackage = {
-		1:_generateSpreadsheetHeader()
+		1:{1:info.worksheetId, 2:info.worksheetTitle},
+		2:_generateSpreadsheetHeader()
 	};
 	//generate file
 	for (var i = 0; i<dataKeys.length; i++) {
 		var key = dataKeys[i],
 		payload = data[key];
-		dataPackage[i+2] = _generateSpreadsheetPayload(payload);
+		dataPackage[i+3] = _generateSpreadsheetPayload(payload);
 	}
 
 	return dataPackage;
@@ -272,23 +269,36 @@ function _generateSpreadsheetHeader(){
 */
 function _spreadsheetsAggregateData(spreadsheet,callback){
 	var worksheets = spreadsheet.worksheets,
-	worksheetsResponse = {};
+	worksheetsResponse = {},
+	worksheetsCounter = 0;
 	
 	for (var i in worksheets){
 		var worksheet = worksheets[i];
-		console.log(worksheet);
+
 		worksheetsResponse[worksheet.id] = {
 			id: worksheet.id,
 			title: worksheet.title
 		}
-		worksheet.cells({},function(err,cells){
-			worksheetsResponse[worksheet.id]['cells'] = _parsePointData(cells['cells']);
+		worksheet.cells({
+			hello: 'monkey'
+		},function(err,cells){
+			var cellsData = cells['cells'];
+			var sheetInfo = _getWorksheetInfo(cellsData);
+			worksheetsResponse[sheetInfo['id']]['cells'] = _parsePointData(cellsData);
+			worksheetsCounter++;
 
-			if (i == worksheets.length-1){
-				callback(worksheetsResponse);
+			if (worksheetsCounter == worksheets.length){
+				setTimeout(callback(worksheetsResponse),500);
 			}
 		});
 	}
+}
+/*
+* get cell worksheet info
+*/
+function _getWorksheetInfo(cells){
+	var row1 = cells['1'];
+	return {title: row1['2']['value'], id: row1['1']['value']}
 }
 /*
 *	parse cell info into coordinates + title & other attributes
@@ -314,26 +324,29 @@ function _parsePointData(cells){
 		}
 	}
 
-	getTitles(cells['1']);
+	getTitles(cells['2']);
 
 	var rows = Object.keys(cells);
-	for (var i = 2; i<=rows.length; i++) {
-		var row = cells[i+''],
-		columnKeys = Object.keys(row),
-		packageResult = {};
+	for (var i = 3; i<=rows.length+1; i++) {
+		var row = cells[i.toString()];
+		if (row) {
+			var columnKeys = Object.keys(row),
+			packageResult = {};
 
-		for (var j in columnKeys) {
-			var cellValue = row[columnKeys[j]];
-
-			if (cellValue['col'] == latKey) {
-				packageResult['lat'] = parseFloat(cellValue['value']);
-			}else if (cellValue['col'] == lonKey) {
-				packageResult['lon'] = parseFloat(cellValue['value']);
-			}else{
-				packageResult[attributes[cellValue['col']]] = cellValue['value'];
+			for (var j in columnKeys) {
+				var cellValue = row[columnKeys[j]];
+				if (cellValue) {
+					if (cellValue['col'] == latKey) {
+						packageResult['lat'] = parseFloat(cellValue['value']);
+					}else if (cellValue['col'] == lonKey) {
+						packageResult['lon'] = parseFloat(cellValue['value']);
+					}else{
+						packageResult[attributes[cellValue['col']]] = cellValue['value'];
+					}
+				}
 			}
+			pointDataResponse.push(packageResult);
 		}
-		pointDataResponse.push(packageResult);
 	}
 
 	return pointDataResponse;

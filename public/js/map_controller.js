@@ -137,6 +137,7 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     this.POINT_CONTROLLER.reset();
     this.PROPORTIONAL_CONTROLLER.reset();
     this.CHLOROPETH_CONTROLLER.reset();
+    SPREADSHEET_TRACKER = [];
   }
 
   this.setSidebar = function(sidebar_controller){
