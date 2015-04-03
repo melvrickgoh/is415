@@ -514,7 +514,7 @@ a:hover.tooltips span {
     background-color: rgba(255,255,255,0.5);
     background-image: url(../images/region.png);
 }
-#spreadsheets-overlay{
+#spreadsheets-overlay, #geoarea-overlay{
   width: 100%;
   height: 100%;
   max-width: 100%;
@@ -528,10 +528,10 @@ a:hover.tooltips span {
   transition-duration: .5s;
   transition-timing-function: cubic-bezier(0.25,0.1,0.25,1);
 }
-#spreadsheets-overlay.closed{
+#spreadsheets-overlay.closed, #geoarea-overlay{
   max-width: 0%;
 }
-#spreadsheets-overlay > .icon-bar{
+#spreadsheets-overlay > .icon-bar, #geoarea-overlay > .icon-bar{
   height: 75px;
   width: 75px;
   background-color: rgba(255, 255, 255, 0.8);
@@ -541,7 +541,8 @@ a:hover.tooltips span {
   position: absolute;
   text-align: center;
 }
-#spreadsheets-overlay > .icon-bar:hover, #spreadsheets-overlay > .icon-bar.selected{
+#spreadsheets-overlay > .icon-bar:hover, #spreadsheets-overlay > .icon-bar.selected,
+#geoarea-overlay > .icon-bar:hover, #geoarea-overlay > .icon-bar.selected{
   background-color:rgba(28, 146, 218,0.8);
   color:white;
 }

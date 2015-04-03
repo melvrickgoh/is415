@@ -1,3 +1,26 @@
+function GeoareaControls () {
+	this.overlay = $('#geoarea-overlay');
+  this.overlay_toggle = $('#geoarea-overlay > .icon-bar');
+
+  this.toggleOverlay = function(){
+		if (this.overlay.hasClass("closed")) {
+			this.overlay.removeClass("closed");
+			this.overlay.css("max-width",300);
+			this.overlay_toggle.addClass("selected");
+			//SPREADSHEETS.showNilMessage();
+			//SPREADSHEETS.showSheetsContainer();
+		} else {
+			this.overlay.addClass("closed");
+			this.overlay.css("max-width",0);
+			this.overlay_toggle.removeClass("selected");
+			//SPREADSHEETS.hideNilMessage();
+			//SPREADSHEETS.hideSheetsContainer();
+		}
+  }
+}
+
+var GEOAREA_UI = new GeoareaControls();
+
 function Spreadsheets () {
 	var dialog_worksheets_refresh = $('#dialogSpreadsheetsRefresh'),
 	dialog_worksheets_refresh_msg = $('#dialogSpreadsheetsRefreshMsg');
