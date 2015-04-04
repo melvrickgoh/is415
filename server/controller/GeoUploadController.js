@@ -39,6 +39,7 @@ GeoUploadController.prototype.uploadToS3 = function(fileData,userGoogleID,callba
 			});
 		}
 	});
+	console.log('done1');
 }
 
 module.exports = GeoUploadController;

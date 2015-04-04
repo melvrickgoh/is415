@@ -78,25 +78,24 @@ app.use(flash());
 
 //upload start
 
-var userUploaded;
-var url;
-var pointData = false;
-
 // these statements config express to use these modules, and only need to be run once
 app.use(bodyParser.json());         
 app.use(bodyParser.urlencoded({ extended: true }));          
 app.use(multer());
 
-
 app.post('/upload/geoJSON', function(req, res) {
+	
+	var userUploaded;
+	var url;
+	var pointData = false;
     console.log(req.files.geojson);
 	//var geojsonType = req.body.mySelect;
 	var title = req.body.title;
 	//console.log("req.body.title: "+req.body.title);
 	var tmp_path = req.files.geojson.path;
 	//console.log("req.files.geojson.path: "+req.files.geojson.path);
-	
-
+	var backURL=req.header('Referer') || '/';
+	var newURL='';
 	var filename=title+'.json';//.split(",");
 	
 	var target_path = __dirname +'/uploads/' + title;
@@ -112,6 +111,7 @@ app.post('/upload/geoJSON', function(req, res) {
 	
 	// set where the file should actually exists
 	console.log("1");
+	//if file already exists, will throw EEXIST error
 	fs.move(tmp_path, target_path, function(err) { 
 	if (err) throw err;
 	uploader;
@@ -120,6 +120,7 @@ app.post('/upload/geoJSON', function(req, res) {
 	
 	//console.log("file contents after move: "+JSON.parse(fs.readFileSync(target_path)));
 	var uploader = geoUploadController.uploadToS3(fileData,userGoogleID,function(isSuccess,results){
+		console.log('done2');
 		console.log("4");
 		if(!isSuccess){
 			console.log("UploadToS3 failed");
@@ -128,25 +129,31 @@ app.post('/upload/geoJSON', function(req, res) {
 		} else {
 			url = results.url;
 			console.log("UploadToS3 success: "+url);
+			console.log('done3');
+			redirect();
 		}
 	});
-	var backURL=req.header('Referer') || '/';
-	//console.log(req.files.fileUploaded.name.split("."));
-	backURL.concat(filename[0]);
-	console.log("backURL: "+backURL+", url: "+url);
 	
-	var oldURL = backURL;
-	var index = 0;
-	var newURL = oldURL;
-	index = oldURL.indexOf('?');
-	if(index == -1){
-		index = oldURL.indexOf('#');
-	}
-	if(index != -1){
-		newURL = oldURL.substring(0, index);
-	}
+	var redirect = function(){
+		backURL=req.header('Referer') || '/';
+		//console.log(req.files.fileUploaded.name.split("."));
+		backURL.concat(filename[0]);
+		console.log("backURL: "+backURL+", url: "+url);
+		
+		var oldURL = backURL;
+		var index = 0;
+		newURL = oldURL;
+		index = oldURL.indexOf('?');
+		if(index == -1){
+			index = oldURL.indexOf('#');
+		}
+		if(index != -1){
+			newURL = oldURL.substring(0, index);
+		}
 
-	res.redirect(newURL+'?userfilepresent=true&userfile='+url);
+		res.redirect(newURL+'?userfilepresent=true&userfile='+url);
+	}
+	
 	});	
 }); 
 	

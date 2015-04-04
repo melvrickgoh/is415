@@ -45,7 +45,8 @@
 	window.onload = function(){
 		
 		if(getURLParameter('user-uploaded') != null){
-			var apiAddress = '/api/data/'+getURLParameter('userfile');
+			var apiAddress = getURLParameter('userfile');
+			console.log('userfile address: '+apiAddress);
 			displayUserPoints(apiAddress);
 			
 			
