@@ -48,47 +48,74 @@ var User = require('./server/entity/user'),
 File = require('./server/entity/file');
 
 var SQUARE_FOOT_KEY = process.env.SQUARE_FOOT_KEY;
-
-//upload start
 var multer      =    require('multer');
 var app         =    express();
 var bodyParser = require('body-parser');
 var multer = require('multer');         
-var fs = require("fs");
+var fs   = require('fs-extra');
+
+app.listen(3000,function(){
+    console.log("Working on port 3000");
+});                     
+
+module.exports = app; 
+
+app.set('views', 'views');  // Specify the folder to find templates
+app.set('view engine', 'ejs');
+app.set('port', (process.env.PORT || 5000));
+
+app.use(bodyParser()); 
+app.use(cookieParser());
+app.use(session({
+	secret:process.env.EXPRESS_SESSION_SECRET
+}));
+app.use(express.static(__dirname + '/public'));
+app.use(flash());
+
+
+//upload start
+
 var userUploaded;
+var url;
 var pointData = false;
 
 // these statements config express to use these modules, and only need to be run once
 app.use(bodyParser.json());         
 app.use(bodyParser.urlencoded({ extended: true }));          
 app.use(multer());
-                                
+
 
 app.post('/upload/geoJSON', function(req, res) {
     console.log(req.files.geojson);
-	var geojsonType = req.body.mySelect;
+	//var geojsonType = req.body.mySelect;
+	var title = req.body.title;
+	//console.log("req.body.title: "+req.body.title);
 	var tmp_path = req.files.geojson.path;
-	var filename=req.files.geojson.name.split(".");
-	// set where the file should actually exists - in this case it is in the "images" directory
-	if (geojsonType == 'point'){
-		//read data and display
-		console.log("point @ :" + tmp_path);
-		fs.readFile(tmp_path, 'utf8', function(err, data) {
-		  if (err) throw err;
-		  userUploaded = data;
-		  dynamicUserAPI(userUploaded, filename[0]);
-		});
-		
-	} else if (geojsonType == 'polygon'){
-		//upload to google drive
-		//GeoUploadController.prototype.uploadToS3 = function(fileData,userGoogleID,callback);
-		console.log("polygon");
+	//console.log("req.files.geojson.path: "+req.files.geojson.path);
+	
+
+	var filename=req.files.geojson.name;//.split(",");
+	var target_path = __dirname +'/uploads/' + filename;
+	
+	var error = '';
+	var userGoogleID = req.session.user.id;
+	
+	var fileData = {
+		layerTitle: title,
+		layerFileName: filename,
+		layerType: 'polygon'
 	}
 	
-	backURL=req.header('Referer') || '/';
+	// set where the file should actually exists
+	console.log("1");
+	fs.move(tmp_path, target_path, function(err) { 
+	if (err) throw err;
+	uploader;
+	
+	var backURL=req.header('Referer') || '/';
 	//console.log(req.files.fileUploaded.name.split("."));
 	backURL.concat(filename[0]);
-	console.log("backURL: "+backURL+", filename: "+filename[0]);
+	console.log("backURL: "+backURL+", url: "+url);
 	
 	var oldURL = backURL;
 	var index = 0;
@@ -101,24 +128,66 @@ app.post('/upload/geoJSON', function(req, res) {
 		newURL = oldURL.substring(0, index);
 	}
 
-	res.redirect(newURL+'?userfilepresent=true&userfile='+filename[0]);
+	res.redirect(newURL+'?userfilepresent=true&userfile='+url);
+	});
 	
-});                                     
+	
+	console.log("3");
+	console.log(fileData);
+	
+	console.log("file contents after move: "+JSON.parse(fs.readFileSync(target_path)));
+	var uploader = geoUploadController.uploadToS3(fileData,userGoogleID,function(isSuccess,results){
+		console.log("file contents after geoUploadController: "+JSON.parse(fs.readFileSync(target_path)));
+		console.log("2");
+		if(!isSuccess){
+			console.log("UploadToS3 failed");
+			console.log(results.err);
+			error = "A error has occurred. Uploading failed.";
+		} else {
+			url = results.url;
+			console.log("UploadToS3 success: "+url);
+		}
+	});	
+}); 
+	
+	/**
+	if (geojsonType == 'point'){
+		//read data and display
+		console.log("point @ :" + tmp_path);
+		fs.readFile(tmp_path, 'utf8', function(err, data) {
+		  if (err) throw err;
+		  userUploaded = data;
+		  dynamicUserAPI(userUploaded, filename[0]);
+		});
+		
+	} else if (geojsonType == 'polygon'){
+		//upload to google drive
+		var fileData = {
+			layerTitle: '',
+			layerFileName: '',
+			layerType: ''
+		}
+	
+	
+	var fileData = {
+			layerTitle: title,
+			layerFileName: '',
+			layerType: 'polygon'
+		}
+	//geoUploadController.uploadToS3(fileData,userGoogleID,function(isSuccess,results){
 
+		});
+	}
+	**/
+                                    
+/**
 function dynamicUserAPI(userUpload, filename) {
 		main_router.route('/api/data/'+filename)
 		.all(function(req,res){
 			res.send(userUpload);
 		});
 }
-
-app.listen(3000,function(){
-    console.log("Working on port 3000");
-});                     
-
-module.exports = app; 
-
-
+**/
 
 //upload end
 /**
@@ -185,19 +254,6 @@ app.post('/upload/geoJSON',fileupload, function(req, res) {
 		});
 	**/
 	// end unverified code
-
-
-app.set('views', 'views');  // Specify the folder to find templates
-app.set('view engine', 'ejs');
-app.set('port', (process.env.PORT || 5000));
-
-app.use(bodyParser()); 
-app.use(cookieParser());
-app.use(session({
-	secret:process.env.EXPRESS_SESSION_SECRET
-}));
-app.use(express.static(__dirname + '/public'));
-app.use(flash());
 
 main_router = express.Router();
 

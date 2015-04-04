@@ -8,6 +8,8 @@ function GeoUploadController(options){
 	}
 }
 
+//POLYLINE_CONTROLLER.add('mrt_network','MRT Network',mrt_layer);
+
 GeoUploadController.prototype.uploadToS3 = function(fileData,userGoogleID,callback){
 	var fileUUID = uuidGenerator.generate();
 	s3Services.upload(fileUUID,fileData.layerFileName,function(success,publicEndpoint,errStack){
