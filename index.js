@@ -64,7 +64,9 @@ app.set('views', 'views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');
 app.set('port', (process.env.PORT || 5000));
 
-app.use(bodyParser()); 
+//app.use(bodyParser()); 
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(cookieParser());
 app.use(session({
 	secret:process.env.EXPRESS_SESSION_SECRET
@@ -94,15 +96,16 @@ app.post('/upload/geoJSON', function(req, res) {
 	//console.log("req.files.geojson.path: "+req.files.geojson.path);
 	
 
-	var filename=req.files.geojson.name;//.split(",");
-	var target_path = __dirname +'/uploads/' + filename;
+	var filename=title+'.json';//.split(",");
+	
+	var target_path = __dirname +'/uploads/' + title;
 	
 	var error = '';
 	var userGoogleID = req.session.user.id;
 	
 	var fileData = {
 		layerTitle: title,
-		layerFileName: filename,
+		layerFileName: title,
 		layerType: 'polygon'
 	}
 	
@@ -111,7 +114,21 @@ app.post('/upload/geoJSON', function(req, res) {
 	fs.move(tmp_path, target_path, function(err) { 
 	if (err) throw err;
 	uploader;
+	console.log("3");
+	console.log(fileData);
 	
+	//console.log("file contents after move: "+JSON.parse(fs.readFileSync(target_path)));
+	var uploader = geoUploadController.uploadToS3(fileData,userGoogleID,function(isSuccess,results){
+		console.log("4");
+		if(!isSuccess){
+			console.log("UploadToS3 failed");
+			console.log(results.err);
+			error = "A error has occurred. Uploading failed.";
+		} else {
+			url = results.url;
+			console.log("UploadToS3 success: "+url);
+		}
+	});
 	var backURL=req.header('Referer') || '/';
 	//console.log(req.files.fileUploaded.name.split("."));
 	backURL.concat(filename[0]);
@@ -129,24 +146,6 @@ app.post('/upload/geoJSON', function(req, res) {
 	}
 
 	res.redirect(newURL+'?userfilepresent=true&userfile='+url);
-	});
-	
-	
-	console.log("3");
-	console.log(fileData);
-	
-	console.log("file contents after move: "+JSON.parse(fs.readFileSync(target_path)));
-	var uploader = geoUploadController.uploadToS3(fileData,userGoogleID,function(isSuccess,results){
-		console.log("file contents after geoUploadController: "+JSON.parse(fs.readFileSync(target_path)));
-		console.log("2");
-		if(!isSuccess){
-			console.log("UploadToS3 failed");
-			console.log(results.err);
-			error = "A error has occurred. Uploading failed.";
-		} else {
-			url = results.url;
-			console.log("UploadToS3 success: "+url);
-		}
 	});	
 }); 
 	
@@ -529,12 +528,57 @@ main_router.route('/api/spreadsheet/load')
 		});
 	});
 
+main_router.route('/api/spreadsheet/edit')
+	.all(function(req,res){
+		var sheetId = req.query.id,
+		worksheetId = req.query.wid,
+		userTokens = req.session.authorization['tokens'];
+	
+		GoogleAPIs.Spreadsheets.edit(sheetId,worksheetId,userTokens,function(isSuccess,spreadsheet){
+			if (isSuccess) {
+				res.json(spreadsheet);
+			}else{
+				res.json({
+					error: true,
+					err: spreadsheet
+				});
+			}
+		});
+	});
+
+
+main_router.route('/api/spreadsheet/save')
+	.post(function(req,res){
+		var worksheetName = req.body.sheet,
+		workbookId = req.body.workbook,
+		data = req.body.data,
+		userTokens = req.session.authorization['tokens'];
+
+		if (!userTokens) {
+			res.json({
+				error: true,
+				message: 'Invalid google authentication. Please login and try again'
+			})
+		}
+
+		GoogleAPIs.Spreadsheets.save(workbookId,worksheetName,data,userTokens,function(isSuccess,results){
+			if (isSuccess) {
+				res.json({
+					error:false
+				});
+			} else {
+				res.json({
+					error: true,
+					message: results
+				});
+			}
+		});
+	});
+
 main_router.route('/api/geoprocess/clean')
 	.post(function(req,res){
 		var google = req.body.google,
 		foursquare = req.body.foursquare;
-		console.log(google);
-		console.log(foursquare);
 		/*var googleObj = JSON.parse(google);
 		console.log(googleObj.length);
 		var foursquareObj = JSON.parse(foursquare);

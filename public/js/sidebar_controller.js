@@ -281,6 +281,11 @@ function SidebarController(MAP_CONTROLLER){
     parent_list_group.append($('<p></p>').append(new_link));
     return new_link;
   }
+
+  this.emptyAllSublinks = function(){
+    POINTLAYER_GROUP.empty();
+    POINTLAYER_LINKS = {};
+  }
 }
 
 var SIDEBAR = new SidebarController(MAP);

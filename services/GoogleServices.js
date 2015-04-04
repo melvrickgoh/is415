@@ -6,8 +6,9 @@ SERVICE_CLIENT_KEY = process.env.GOOGLE_CLIENT_KEY;
 SERVICE_ID = process.env.SERVICE_CLIENT_ID;
 SERVICE_EMAIL = process.env.SERVICE_CLIENT_EMAIL;
 
-var googleapis = require('googleapis'),
-GoogleSpreadsheets = require("google-spreadsheets");
+var googleapis = require("googleapis"),
+GoogleSpreadsheets = require("google-spreadsheets"),
+EditSpreadsheet = require("edit-google-spreadsheet");
 var OAuth2Client = googleapis.OAuth2Client;
 var CLIENT_ID = process.env.GOOGLE_BROWSER_CLIENT_ID;
 var CLIENT_SECRET = process.env.GOOGLE_BROWSER_CLIENT_SECRET;
@@ -150,27 +151,154 @@ GoogleServices.prototype.Spreadsheets.load = function(sheetId,tokens,callback){
   });
 }
 
+GoogleServices.prototype.Spreadsheets.edit = function(sheetId,worksheetId,tokens,callback){
+
+	EditSpreadsheet.load({
+		debug: true,
+    spreadsheetId: sheetId,
+    worksheetName: worksheetId,
+    accessToken: {
+      type: 'Bearer',
+      token: tokens['access_token']
+    }
+	}, function sheetReady(err, spreadsheet) {
+	  if(err) callback(false,err);
+	  var worksheets = spreadsheet.raw['worksheets'];
+	  for (var i in worksheets) {
+	  	var w = worksheets[i];
+	  }
+	  spreadsheet.receive(function(err, rows, info) {
+      if (err) {
+        throw err;
+      }
+      console.dir(rows);
+      console.dir(info);
+    });
+	});
+}
+
+GoogleServices.prototype.Spreadsheets.save = function(sheetId,worksheetName,data,tokens,callback){
+	EditSpreadsheet.load({
+		debug: true,
+    spreadsheetId: sheetId,
+    worksheetName: worksheetName,
+    accessToken: {
+      type: 'Bearer',
+      token: tokens['access_token']
+    }
+	}, function sheetReady(err, spreadsheet) {
+	  if(err) callback(false,err);
+
+	  if (spreadsheet == null || spreadsheet == undefined) {
+	  	callback(false,"Spreadsheet not found! Try entering the title again or create a fresh sheet.");
+	  } else {
+		  spreadsheet.receive(function(err, rows, info) {
+	      if (err) {
+	        throw err;
+	      }
+	      if (info.totalRows > 0) {
+	      	callback(false,"This spreadsheet isn't empty. Please create another sheet and try again.");
+	      }else{
+	      	var savePackage = _generateSpreadsheetDataPackage(info,data);
+	      	
+	      	spreadsheet.add(savePackage);
+	      	spreadsheet.send(function(err){
+	      		if(err) throw err;
+      			callback(true,"Spreadsheet successfully updated");
+	      	});
+	      	
+	      }
+	    });
+	  }
+
+	});
+}
+
+function _generateSpreadsheetDataPackage(info,data){
+	var dataKeys = Object.keys(data),
+	first = data[dataKeys[0]];
+
+	var dataPackage = {
+		1:{1:info.worksheetId, 2:info.worksheetTitle},
+		2:_generateSpreadsheetHeader()
+	};
+	//generate file
+	for (var i = 0; i<dataKeys.length; i++) {
+		var key = dataKeys[i],
+		payload = data[key];
+		dataPackage[i+3] = _generateSpreadsheetPayload(payload);
+	}
+
+	return dataPackage;
+}
+
+function _generateSpreadsheetPayload(payload){
+	var attrs = Object.keys(payload),
+	packageS = {}
+	headers = ['name','formatted_address','type','rating','checkinsCount','tipsCount','usersCount','icon','lat','lng','place_id','id','contact'];
+
+	for (var i = 0; i<headers.length; i++) {
+		var header = headers[i],
+		payloadValue = payload[header];
+
+		switch(header){
+			case 'rating':
+			case 'checkinsCount':
+			case 'tipsCount':
+			case 'usersCount':
+				packageS[i+1] = payloadValue || 0;
+				break;
+			default:
+				packageS[i+1] = payloadValue || '';
+		}
+	}
+	return packageS;
+}
+
+function _generateSpreadsheetHeader(){
+	var headers = ['name','formatted_address','type','rating','checkinsCount','tipsCount','usersCount','icon','lat','lng','place_id','id','contact'];
+	var headerload = {};
+	for (var i = 0; i<headers.length; i++) {
+		headerload[i+1] = headers[i];
+	}
+	return headerload;
+}
+
 /*
 * aggregate point data content
 */
 function _spreadsheetsAggregateData(spreadsheet,callback){
 	var worksheets = spreadsheet.worksheets,
-	worksheetsResponse = {};
+	worksheetsResponse = {},
+	worksheetsCounter = 0;
 	
 	for (var i in worksheets){
 		var worksheet = worksheets[i];
+
 		worksheetsResponse[worksheet.id] = {
 			id: worksheet.id,
 			title: worksheet.title
 		}
-		worksheet.cells({},function(err,cells){
-			worksheetsResponse[worksheet.id]['cells'] = _parsePointData(cells['cells']);
+		worksheet.cells({
+			hello: 'monkey'
+		},function(err,cells){
+			var cellsData = cells['cells'];
+			var sheetInfo = _getWorksheetInfo(cellsData);
+			worksheetsResponse[sheetInfo['id']]['cells'] = _parsePointData(cellsData);
+			worksheetsCounter++;
 
-			if (i == worksheets.length-1){
-				callback(worksheetsResponse);
+			if (worksheetsCounter == worksheets.length){
+				setTimeout(callback(worksheetsResponse),500);
 			}
 		});
 	}
+}
+/*
+* get cell worksheet info
+*/
+function _getWorksheetInfo(cells){
+	var row1 = cells['1'];
+	return {title: row1['2']['value'], id: row1['1']['value']}
 }
 /*
 *	parse cell info into coordinates + title & other attributes
@@ -196,26 +324,29 @@ function _parsePointData(cells){
 		}
 	}
 
-	getTitles(cells['1']);
+	getTitles(cells['2']);
 
 	var rows = Object.keys(cells);
-	for (var i = 2; i<=rows.length; i++) {
-		var row = cells[i+''],
-		columnKeys = Object.keys(row),
-		packageResult = {};
+	for (var i = 3; i<=rows.length+1; i++) {
+		var row = cells[i.toString()];
+		if (row) {
+			var columnKeys = Object.keys(row),
+			packageResult = {};
 
-		for (var j in columnKeys) {
-			var cellValue = row[columnKeys[j]];
-
-			if (cellValue['col'] == latKey) {
-				packageResult['lat'] = parseFloat(cellValue['value']);
-			}else if (cellValue['col'] == lonKey) {
-				packageResult['lon'] = parseFloat(cellValue['value']);
-			}else{
-				packageResult[attributes[cellValue['col']]] = cellValue['value'];
+			for (var j in columnKeys) {
+				var cellValue = row[columnKeys[j]];
+				if (cellValue) {
+					if (cellValue['col'] == latKey) {
+						packageResult['lat'] = parseFloat(cellValue['value']);
+					}else if (cellValue['col'] == lonKey) {
+						packageResult['lon'] = parseFloat(cellValue['value']);
+					}else{
+						packageResult[attributes[cellValue['col']]] = cellValue['value'];
+					}
+				}
 			}
+			pointDataResponse.push(packageResult);
 		}
-		pointDataResponse.push(packageResult);
 	}
 
 	return pointDataResponse;

@@ -42,11 +42,14 @@ S3Services.prototype.upload = function(uuid,filename,callback){
 	            uploader.progressAmount, uploader.progressTotal);
 	});
 	uploader.on('end', function() {
+
+		//full filepath needed
+
 	  //console.log("done uploading");
-	  fs.unlink(filePath, function (err) {
-	  if (err) { callback(false,err); }
-		  callback(true,'File deleted successfully: ' + localFile);
-		});
+	//  fs.unlink(filePath, function (err) {
+	//  if (err) { callback(false,err); }
+	//	  callback(true,'File deleted successfully: ' + localFile);
+	//	});
 	  callback(true,"https://s3-ap-southeast-1.amazonaws.com/spatia/"+uuid+".json");
 	});
 }
