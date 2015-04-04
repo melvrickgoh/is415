@@ -1,8 +1,10 @@
 function DataAggregator(){
 	this.DATA_HASH = {};
+	this.SPATIA_R_HASH = {};
 
 	this.empty = function(){
 		this.DATA_HASH = {};
+		this.SPATIA_R_HASH = {};
 	}
 }
 
