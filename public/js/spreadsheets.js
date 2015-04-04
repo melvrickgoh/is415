@@ -225,6 +225,7 @@ Spreadsheets.prototype._postProcessSheetData = function(spreadsheet){
 		}
 
 		layers.push(payload);
+		DATA_COMBINE.SPATIA_R_HASH[payload.title] = payload;
 	}
 	return layers;
 }

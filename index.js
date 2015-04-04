@@ -19,6 +19,7 @@ var daoMaster = require('./server/dao/DAOMaster');
 var DAOMaster = new daoMaster();
 var GoogleUsersDAO = DAOMaster.GoogleUsersDAO;
 var S3FilesDAO = DAOMaster.S3FilesDAO;
+var RDAO = DAOMaster.RDAO;
 
 var ServiceMaster = new serviceMaster();
 var StaticSpatial = ServiceMaster.StaticSpatial;
@@ -613,6 +614,15 @@ main_router.route('/api/iron/get')
 			}else{
 				res.send(response);
 			}
+		});
+	});
+
+main_router.route('/api/r/test')
+	.post(function(req,res){
+		var userid = req.session.user.id,
+		payload = req.body.data;
+		RDAO.initPayload(userid,payload,function(isSuccess,results){
+			res.json(results);
 		});
 	});
 
