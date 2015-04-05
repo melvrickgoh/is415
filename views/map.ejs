@@ -38,21 +38,21 @@
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-		
     <![endif]-->
-	
+
 	<script>
+	/**
 	window.onload = function(){
 		
 		if(getURLParameter('user-uploaded') != null){
 			var apiAddress = getURLParameter('userfile');
-			console.log('userfile address: '+apiAddress);
+			alert('userfile address: '+apiAddress);
 			displayUserPoints(apiAddress);
 			
 			
 		}
 				//720
-		/**
+		
 		var hydro = new L.LayerGroup();
 		L.geoJson(hydro_s, {style: hydrosStyle}).addTo(hydro);
 		
@@ -65,10 +65,10 @@
                 '</li>';
 				
 		}
-		**/
 	};
+	**/
+	
 	</script>
-
 </head>
 
 <body>
@@ -120,7 +120,7 @@
                     <a href="#" id="base_control_osm" style="width:300px;transform:translate(-25px,0px)" class="selected">
                         <i id="base_control_icon_osm" class="fa fa-openid fa-2x base_control_osm_icon_selected"></i>
                         Open Street Maps
-                    </a> 
+                    </a>
                     <a href="#" id="base_control_bing">
                         <i id="base_control_icon_bing" class="base_control_bing_icon"></i>
                         Bing Maps (Satellite)
@@ -131,13 +131,11 @@
                     </a>
                 </li>
 				
-				
 				<a id="user-uploaded">
 				</a>
 				
 				<li class="sidebar-brand">Upload File</li>
                 <li><!--File upload test code-->
-				
 				<form method="post" enctype="multipart/form-data" action="/upload/geoJSON">
 					<input type="file" name="geojson">
 					Title:<br>
@@ -150,15 +148,7 @@
 					--!>
 					<input type="submit">
 				</form>
-
 				</li>
-				
-				
-				
-				
-				
-				
-				
 				
             </ul>
         </div>
@@ -328,14 +318,15 @@
     <script src="js/vendor/typeahead/typeahead.jquery.min.js"></script>
     <script src="js/vendor/typeahead/typeahead.bundle.min.js"></script>
     <script src="js/vendor/typeahead/bloodhound.min.js"></script>
+    <script src="js/vendor/lunr.js"></script>
 
     <!-- Google Dependency -->
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
 
+    <!-- Initialization Variables -->
+    <script src="js/initializers.js"></script>
+
     <!-- Support Scripts -->
-
-    <script type="js/google_places.js"></script>
-
     <script src="js/helpers.js"></script>
     <script src="js/r.js"></script>
     <script src="js/color_palette.js"></script>
@@ -348,7 +339,6 @@
     <!-- Map Controls Script (Must load support scripts first) -->
     <script src="js/map_controller.js"></script>
     <script src="js/sidebar_controller.js"></script>
-
 
     <!-- Menu Toggle Script -->
     <script src="js/action.js"></script>
