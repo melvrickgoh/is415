@@ -197,6 +197,24 @@ function SidebarController(MAP_CONTROLLER){
     CHOROPLETH_LINKS[id] = {"link":new_link,"active":true};
   }
 
+
+    this.addUserLayerSublink = function(id,textValue,faIcon,faIconColor){
+    var new_link = addSubgroupLink(USERUPLOADS_GROUP,id,textValue,false,faIcon,undefined,undefined,faIconColor);
+    new_link.addClass('userlayer_selected');
+    new_link.click(function(e){
+      if (new_link.hasClass('userlayer_selected')) {
+        MAP.USERUPLOAD_CONTROLLER.hide(id);
+        USERUPLOAD_LINKS[id]["active"] = false;
+        new_link.removeClass('userlayer_selected');
+      } else {
+        MAP.USERUPLOAD_CONTROLLER.show(id);
+        USERUPLOAD_LINKS[id]["active"] = true;
+        new_link.addClass('userlayer_selected');
+      }
+    });
+    USERUPLOAD_LINKS[id] = {"link":new_link,"active":true};
+  }
+
   this.addProportionalLayerSubLink = function(id,textValue,faIcon,faIconColor){
     var new_link = addSubgroupLink(PROPORTIONAL_GROUP,id,textValue,false,faIcon,undefined,undefined,faIconColor);
     new_link.addClass('proportionallayer_selected');

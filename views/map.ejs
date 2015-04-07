@@ -54,21 +54,25 @@
 	  return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
 	}
 
-	window.onload = function(){
+	window.ready = function(){
 		
 		if(getURLParameter('userfilepresent') != null){
 			var apiAddress = getURLParameter('userfile');
             var jsonData = null;
             alert("Address: "+apiAddress);
+            loadUserLayer(apiAddress);
            /**
             $.getJSON(apiAddress,function(data){
               jsonData = data;
               alert(JSON.stringify(jsonData));
               });
             **/
-            loadUserUploads(apiAddress);
+            //reinitialize(apiAddress);
+            //loadUserUploads(apiAddress);
+            
             //MAP.loadVenuesChoroplethLayer(input,response,groupColor);
             //displayUserPoints(apiAddress);
+            
 		}
 	};
 	
@@ -135,7 +139,7 @@
                         Google Maps
                     </a>
                 </li>
-				<!--
+				
                 <ul id="useruploads_layer_group">
                 </ul>
                 <li class="sidebar-brand">
@@ -144,7 +148,7 @@
                         <i class="fa fa-th"></i>
                     </a>
                 </li>
-                -->
+                
 				<a id="user-uploaded">
 				</a>
 				

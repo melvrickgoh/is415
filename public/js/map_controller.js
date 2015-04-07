@@ -135,6 +135,16 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     this.loadMRTNetwork();
   }
 
+  /**
+  function reinitializeMap(address){
+    //load regions
+    this.loadPlanningRegions(this.map,this.onEachRegionPopup);
+    //init MRT polyline layer
+    this.loadMRTNetwork();
+    loadUserUploads(address);
+  }
+  **/
+
   this.reset = function(){
     this.POINT_CONTROLLER.reset();
     this.PROPORTIONAL_CONTROLLER.reset();
@@ -178,7 +188,7 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     });
   }
 
-  this.loadMRTNetwork = function(){
+  this.loadMRTNetwork = function loadMrt(){
     var MAP = this.map;
     XHR('/api/data/mrt',function(response){
       var mrt_layer = L.geoJson(JSON.parse(response),{
@@ -248,6 +258,20 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
         }
       });
       POLYLINE_CONTROLLER.add('mrt_network','MRT Network',mrt_layer);
+    });
+  }
+
+  this.loadUserLayer = function loadUserLayer(address){
+    var MAP = this.map;
+   XHR(address,function(response){
+      var useruploads_layer = L.geoJson(JSON.parse(response));
+
+
+      if(USERUPLOAD_CONTROLLER.HASH[input]){return;}
+      USERUPLOAD_CONTROLLER.add(input,input,useruploads_layer);
+      //this.SIDEBAR.addChoroplethLayerSublink(input,input,'fa-th-large',color);
+
+      USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
     });
   }
 
@@ -652,6 +676,11 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     });
   }
 }
+/**
+function reinitialize(address){
+  reinitializeMap(address);
+}
+**/
 
 var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API,COLORS);
 MAP.initialize();
