@@ -401,6 +401,14 @@
     color: #999999;
 }
 
+.sidebar-nav > .sidebar-brand a.useruploads_selected,
+.sidebar-nav > .sidebar-brand a.useruploads:hover,
+.sidebar-nav > #useruploads_layer_group a:hover,
+.sidebar-nav > #useruploads_layer_group a.useruploads_selected {
+    color: rgba(0, 172, 237, 1);
+    background: none;
+}
+
 .sidebar-nav > .sidebar-brand a.polyline_selected,
 .sidebar-nav > .sidebar-brand a.polyline:hover,
 .sidebar-nav > #polyline_layer_group a:hover,

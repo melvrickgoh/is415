@@ -81,7 +81,13 @@ function SidebarController(MAP_CONTROLLER){
       MAP.showBingBasemap();
     }
   }
+/**
+ USERUPLOADS_MASTER_LINK = $('#super_link_useruploads');
+  USERUPLOADS_MASTER_LINK.click(toggleUserUploads);
 
+  USERUPLOADS_GROUP = $('#useruploads_layer_group');
+  USERUPLOADS_LINKS = {};
+**/
   POLYLINE_MASTER_LINK = $('#super_link_polyline');
   POLYLINE_MASTER_LINK.click(toggleSuperPolyline);
 

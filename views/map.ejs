@@ -40,33 +40,38 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
 	<script>
-	/**
+	
+	
+	
+	/** test with 
+	http://localhost:5000/secure_map?userfilepresent=true&userfile=http://localhost:5000/sggeo.json
+	**/
+	
+	function getURLParameter(name) {
+	  return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+	}
+
 	window.onload = function(){
 		
-		if(getURLParameter('user-uploaded') != null){
+		if(getURLParameter('userfilepresent') != null){
 			var apiAddress = getURLParameter('userfile');
-			alert('userfile address: '+apiAddress);
-			displayUserPoints(apiAddress);
-			
-			
-		}
-				//720
-		
-		var hydro = new L.LayerGroup();
-		L.geoJson(hydro_s, {style: hydrosStyle}).addTo(hydro);
-		
-		document.getElementById('user-uploaded').innerHTML = '<li class="sidebar-brand">Uploaded Layer</li>'+
-				'<li>'+
-                    '<a href="#" id="user_uploaded_point" style="transform: translate(-20px,0px);width:300px;">'+
-                        '<i id="base_control_icon_google" class="fa fa-google fa-2x base_control_google_icon" style="transform:translate(0px,8px)"></i>'+
-                        'Google Maps'+
-                    '</a>'+
-                '</li>';
-				
+            var jsonData = null;
+            alert("Address: "+apiAddress);
+           /**
+            $.getJSON(apiAddress,function(data){
+              jsonData = data;
+              alert(JSON.stringify(jsonData));
+              });
+            **/
+            loadUserUploads(apiAddress);
+            //MAP.loadVenuesChoroplethLayer(input,response,groupColor);
+            //displayUserPoints(apiAddress);
 		}
 	};
-	**/
+	
 	
 	</script>
 </head>
@@ -130,7 +135,16 @@
                         Google Maps
                     </a>
                 </li>
-				
+				<!--
+                <ul id="useruploads_layer_group">
+                </ul>
+                <li class="sidebar-brand">
+                    <a href="#" id="super_link_useruploads" class="useruploadlayer useruploadedlayer_selected">
+                        Useruploaded Layer(s)
+                        <i class="fa fa-th"></i>
+                    </a>
+                </li>
+                -->
 				<a id="user-uploaded">
 				</a>
 				

@@ -120,11 +120,13 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
   POINT_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'point');
   PROPORTIONAL_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'proportional');
   CHLOROPETH_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'chloropeth');
+  USERUPLOAD_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'userupload');
 
   this.POLYLINE_CONTROLLER = POLYLINE_CONTROLLER;
   this.POINT_CONTROLLER = POINT_CONTROLLER;
   this.PROPORTIONAL_CONTROLLER = PROPORTIONAL_CONTROLLER;
   this.CHLOROPETH_CONTROLLER = CHLOROPETH_CONTROLLER;
+  this.USERUPLOAD_CONTROLLER = USERUPLOAD_CONTROLLER;
 
   this.initialize = function(){
     //load regions
@@ -166,6 +168,14 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
 
   this.showGoogleBasemap = function(){
     this.map.addLayer(this.google);
+  }
+  
+  this.loadUserUploads = function loadUserUploads(address){
+	 var MAP = this.map;
+	 XHR(address,function(response){
+      var useruploads_layer = L.geoJson(JSON.parse(response));
+      USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
+    });
   }
 
   this.loadMRTNetwork = function(){
