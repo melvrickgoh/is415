@@ -48,12 +48,24 @@ var PlacesController = ControlMaster.PlacesController;
 var User = require('./server/entity/user'),
 File = require('./server/entity/file');
 
+
+
 var SQUARE_FOOT_KEY = process.env.SQUARE_FOOT_KEY;
 var multer      =    require('multer');
 var app         =    express();
 var bodyParser = require('body-parser');
 var multer = require('multer');         
 var fs   = require('fs-extra');
+
+var allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', 's3-ap-southeast-1.amazonaws.com');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+    next();
+}
+
+app.use(allowCrossDomain);
 
 app.listen(3000,function(){
     console.log("Working on port 3000");

@@ -134,21 +134,25 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
     //init MRT polyline layer
     this.loadMRTNetwork();
   }
-
-  /**
-  function reinitializeMap(address){
-    //load regions
+/**
+    MAP_CONTROLLER.prototype.reinitialize = function(address){
+    alert("reinitialize");
     this.loadPlanningRegions(this.map,this.onEachRegionPopup);
-    //init MRT polyline layer
     this.loadMRTNetwork();
-    loadUserUploads(address);
-  }
-  **/
+    
+    var MAP = this.map;
+    XHR(address,function(response){
+      var useruploads_layer = L.geoJson(JSON.parse(response));
+      USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
+    });
+    }
+**/
 
   this.reset = function(){
     this.POINT_CONTROLLER.reset();
     this.PROPORTIONAL_CONTROLLER.reset();
     this.CHLOROPETH_CONTROLLER.reset();
+    this.USERUPLOAD_CONTROLLER.reset();
     SPREADSHEET_TRACKER = [];
   }
 
@@ -179,14 +183,7 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
   this.showGoogleBasemap = function(){
     this.map.addLayer(this.google);
   }
-  
-  this.loadUserUploads = function loadUserUploads(address){
-	 var MAP = this.map;
-	 XHR(address,function(response){
-      var useruploads_layer = L.geoJson(JSON.parse(response));
-      USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
-    });
-  }
+
 
   this.loadMRTNetwork = function loadMrt(){
     var MAP = this.map;
@@ -260,7 +257,7 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
       POLYLINE_CONTROLLER.add('mrt_network','MRT Network',mrt_layer);
     });
   }
-
+/**
   this.loadUserLayer = function loadUserLayer(address){
     var MAP = this.map;
    XHR(address,function(response){
@@ -274,7 +271,7 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
       USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
     });
   }
-
+**/
   this.loadVenuesChoroplethLayer = function(input,response,color){
     var fs_venues = response.response.venues;
     for (var k in fs_venues) {
@@ -678,9 +675,40 @@ var MAP_CONTROLLER = function(xhr, sg_ll, places_api, venues_api, colors_palette
 }
 /**
 function reinitialize(address){
-  reinitializeMap(address);
+  reinitialize(address);
 }
 **/
 
 var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API,COLORS);
 MAP.initialize();
+/**
+function reinitializeMap(address){
+  //load regions
+  //map.remove();
+  //var MAP = new MAP_CONTROLLER(XHR,SINGAPORE_LATLON,PLACES_API,VENUES_API,COLORS);
+  //MAP_CONTROLLER.reinitialize(address);
+  USERUPLOAD_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'userupload');
+  var MAP = this.map;
+    XHR(address,function(response){
+      var useruploads_layer = L.geoJson(JSON.parse(response));
+      USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
+    });
+
+
+  //MAP.reinitialize(address);
+  alert("loaded reinitializeMap");
+}
+
+
+follow this this.getPlanningRegion = function(callback){
+XHR('/api/data/planning_regions',function(response){
+callback(response);
+});
+}
+
+declare inside
+
+an alternative is MAP_CONTROLLER.prototype.reinitialize = function(){...}
+
+read the code in map_controller.js
+**/

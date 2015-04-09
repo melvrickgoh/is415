@@ -40,44 +40,6 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-
-	<script>
-	
-	
-	
-	/** test with 
-	http://localhost:5000/secure_map?userfilepresent=true&userfile=http://localhost:5000/sggeo.json
-	**/
-	
-	function getURLParameter(name) {
-	  return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
-	}
-
-	window.ready = function(){
-		
-		if(getURLParameter('userfilepresent') != null){
-			var apiAddress = getURLParameter('userfile');
-            var jsonData = null;
-            alert("Address: "+apiAddress);
-            loadUserLayer(apiAddress);
-           /**
-            $.getJSON(apiAddress,function(data){
-              jsonData = data;
-              alert(JSON.stringify(jsonData));
-              });
-            **/
-            //reinitialize(apiAddress);
-            //loadUserUploads(apiAddress);
-            
-            //MAP.loadVenuesChoroplethLayer(input,response,groupColor);
-            //displayUserPoints(apiAddress);
-            
-		}
-	};
-	
-	
-	</script>
 </head>
 
 <body>
@@ -139,7 +101,7 @@
                         Google Maps
                     </a>
                 </li>
-				
+				<!--
                 <ul id="useruploads_layer_group">
                 </ul>
                 <li class="sidebar-brand">
@@ -151,7 +113,7 @@
                 
 				<a id="user-uploaded">
 				</a>
-				
+				-->
 				<li class="sidebar-brand">Upload File</li>
                 <li><!--File upload test code-->
 				<form method="post" enctype="multipart/form-data" action="/upload/geoJSON">
@@ -311,13 +273,14 @@
         </div>
 
     </div>
+
+    <!-- jQuery -->
+    <script src="js/jquery.min.js"></script>
+
     <!-- /#wrapper -->
     <script type="text/javascript">
         var SPREADSHEET_TRACKER = [];
     </script>
-
-    <!-- jQuery -->
-    <script src="js/jquery.min.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.js"></script>
@@ -329,8 +292,6 @@
 
     <script src="js/vendor/L.Control.Pan.js"></script>
     <script src="js/vendor/Google.js"></script>
-
-
 
     <!-- Typeahead -->
     <script src="js/vendor/typeahead/typeahead.jquery.min.js"></script>
@@ -362,6 +323,118 @@
     <script src="js/action.js"></script>
     <script src="js/spreadsheets.js"></script>
     <script src="js/overlay.js"></script>
+
+    <script>
+    /** test with 
+    http://localhost:5000/secure_map?userfilepresent=true&userfile=http://localhost:5000/sggeo.json
+
+    http://localhost:5000/secure_map?userfilepresent=true&userfile=https://s3-ap-southeast-1.amazonaws.com/spatia/a7240ff3-7b27-457b-a076-9a2e6589ea80.json
+    **/
+    
+    function getURLParameter(name) {
+      return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+    }
+
+    function executeFunctionByName(functionName, context /*, args */) {
+      var args = [].slice.call(arguments).splice(2);
+      var namespaces = functionName.split(".");
+      var func = namespaces.pop();
+      for(var i = 0; i < namespaces.length; i++) {
+        context = context[namespaces[i]];
+      }
+      return context[func].apply(this, args);
+    }
+    window.onload = function(){
+     if(getURLParameter('userfilepresent') != null){
+            var apiAddress = getURLParameter('userfile');
+            var jsonData = null;
+
+            $.ajax({
+                url: apiAddress,
+             
+                // The name of the callback parameter, as specified by the YQL service
+                jsonp: "callback",
+             
+                // Tell jQuery we're expecting JSONP
+                dataType: "jsonp",
+             
+                // Tell YQL what we want and that we want JSON
+                data: {
+                    q: "select title,abstract,url from search.news where query=\"cat\"",
+                    format: "json"
+                },
+             
+                // Work with the response
+                success: function( response ) {
+                    console.log( response ); // server response
+                }
+            });
+                        
+
+            XHR(apiAddress,function(response){
+               // alert(JSON.parse(response));
+              var useruploads_layer = L.geoJson(JSON.parse(response));
+              USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
+            })
+
+            //alert(map!=null);
+
+
+/**
+
+
+            
+            $.getJSON(apiAddress,function(data){
+              jsonData = data;
+              alert(JSON.stringify(jsonData));
+              });
+
+
+            USERUPLOAD_CONTROLLER = new SUBGROUP_MAP_CONTROLLER(this.map,'userupload');
+          var MAP = this.map;
+            XHR(address,function(response){
+              var useruploads_layer = L.geoJson(JSON.parse(response));
+              USERUPLOAD_CONTROLLER.add('user_uploaded','useruploaded',useruploads_layer);
+            });
+**/
+            
+            //prototype.reinitialize(apiAddress);
+            //MAP_CONTROLLER.reinitialize(apiAddress);
+            
+            //window[prototype][reinitialize](apiAddress);
+            //window[MAP_CONTROLLER][reinitialize](apiAddress);
+            
+            //window[prototype][reinitialize](apiAddress);
+
+
+            //reinitializeMap(apiAddress);
+            //alert("Address: "+apiAddress);
+            //loadUserLayer(apiAddress);
+           /**
+            $.getJSON(apiAddress,function(data){
+              jsonData = data;
+              alert(JSON.stringify(jsonData));
+              });
+            **/
+            //executeFunctionByName("MAP_CONTROLLER.reinitializeMap", window, apiAddress);
+           // window[MAP_CONTROLLER];
+           
+
+
+            //window[MAP_CONTROLLER][reinitializeMap](apiAddress);
+
+
+
+          //  MAP_CONTROLLER.reinitializeMap(apiAddress);
+            //loadUserUploads(apiAddress);
+            
+            //MAP.loadVenuesChoroplethLayer(input,response,groupColor);
+            //displayUserPoints(apiAddress);
+            
+        }
+    }
+
+    </script>
 
 </body>
 
