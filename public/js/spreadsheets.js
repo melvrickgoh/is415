@@ -276,6 +276,7 @@ Spreadsheets.prototype.API.storeDataToDrive = function(){
 		} else { //package returns with the data now stored on the spreadsheet
 			OVERLAY.hide();
 		}
+		SPREADSHEETS_UI.hideLayerLoadDialog();
 	});
 
 }

@@ -102,6 +102,10 @@
 .warning-dialog{
   background-color: rgba(250,100,100,0.7);
 }
+.white-overlay{
+  background-color:rgba(255, 255, 255, 0.75);
+  z-index:100000;
+}
 .white{
   color:white;
 }
@@ -528,7 +532,21 @@ a:hover.tooltips span {
   transition-duration: .5s;
   transition-timing-function: cubic-bezier(0.25,0.1,0.25,1);
 }
-#spreadsheets-overlay.closed{
+#r-overlay{
+  width: 600px;
+  height: 100%;
+  max-width: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 10001;
+  position: absolute;
+  top: 0px;
+  right:0px;
+  text-align:center;
+  transition-property: all;
+  transition-duration: .5s;
+  transition-timing-function: cubic-bezier(0.25,0.1,0.25,1);
+}
+#spreadsheets-overlay.closed, #r-overlay.closed{
   max-width: 0%;
 }
 #spreadsheets-overlay > .icon-bar{
@@ -541,7 +559,19 @@ a:hover.tooltips span {
   position: absolute;
   text-align: center;
 }
-#spreadsheets-overlay > .icon-bar:hover, #spreadsheets-overlay > .icon-bar.selected{
+#r-overlay > .icon-bar{
+  height: 75px;
+  width: 75px;
+  background-color: rgba(255, 255, 255, 0.8);
+  transform: translateX(-75px);
+  padding: 20px 0px;
+  margin: auto;
+  position: absolute;
+  text-align: center;
+  top:75px;
+}
+#spreadsheets-overlay > .icon-bar:hover, #spreadsheets-overlay > .icon-bar.selected,
+#r-overlay > .icon-bar:hover, #r-overlay > .icon-bar.selected{
   background-color:rgba(28, 146, 218,0.8);
   color:white;
 }

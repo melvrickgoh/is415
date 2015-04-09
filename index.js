@@ -429,9 +429,12 @@ main_router.route('/api/r/test')
 	.post(function(req,res){
 		var userid = req.session.user.id,
 		payload = req.body.data;
+		console.log(payload);
+		/*
 		RDAO.initPayload(userid,payload,function(isSuccess,results){
 			res.json(results);
 		});
+		*/
 	});
 
 app.use('/', main_router);
