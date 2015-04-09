@@ -1,5 +1,5 @@
 function SpatiaR(){
-	var local = 'http://127.0.0.1:7790/',
+	var local = 'http://127.0.0.1:5358/',
 	remote = 'https://spatia.shinyapps.io/spatiaR/';
 
 	function _rserve(){
@@ -24,12 +24,14 @@ var SPATIA_R = new SpatiaR();
 
 function SpatiaRConsole(){
 	var rDialog = $('#rDialog'),
-	rTestButton = $('#r-trigger');
+	rDialogEnter = $('#r-dialog-enter'),
+	rDialogCancel = $('#r-dialog-cancel');
 
-	rTestButton.click(_testSpatiaRFunction);
+	rDialogEnter.click(triggerKDECall);
+	rDialogCancel.click(function(){R_CONSOLE.hideRDialog();});
 
-	function _testSpatiaRFunction(){
-		SPATIA_R.spatiaRJSON();
+	function triggerKDECall(){
+		//SPATIA_R.spatiaRJSON();
 	}
 
 	this.showRDialog = function(){
@@ -44,4 +46,4 @@ function SpatiaRConsole(){
 }
 
 var R_CONSOLE = new SpatiaRConsole();
-//R_CONSOLE.showRDialog();
+R_CONSOLE.showRDialog();
