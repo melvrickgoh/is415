@@ -62,7 +62,7 @@
                 <ul id="point_layer_group">
                     
                 </ul>
-                <li class="sidebar-brand">
+                <li class="sidebar-brand hide">
                     <a href="#" id="super_link_proportional" class="proportionallayer proportionallayer_selected">
                         Proportional Layer(s)
                         <i class="fa fa-circle-o"></i>
@@ -136,7 +136,7 @@
                         <a id="taskbar_places_search" class="tooltips" href="#"><i id="taskbar_search_icon" class="fa fa-google fa-4x" style=""></i><span>Places Search (Hotkey: 2)</span></a>
                         <a id="taskbar_venues_search" class="tooltips" href="#"><i id="taskbar_venues_icon" class="fa fa-foursquare fa-4x" style=""></i><span>Venues Search (Hotkey: 3)</span></a>
                     </div>
-                    <div id="legend"></div>
+                    <div id="legend" class="hide"></div>
                     <div id="region_legend"></div>
                 </div>
             </div>
@@ -202,13 +202,15 @@
                 <h4 class="modal-title white">Kernel Density Analysis</h4>
               </div>
               <div class="modal-body">
-                <p>
-                    R data check
-                </p>
+                <span><b>Analyze Layer</b></span>
+                </br>
+                </br>
+                <select id="analyzeLayerR" name="Analyze Layer" class="background05 width100p height30 lh15 pl10 pr10">
+                </select>
               </div>
               <div class="modal-footer ta-center">
                 <button id="r-dialog-cancel" type="button" class="nosaveBtn btn btn-default br0 bc0 width180px" data-dismiss="modal" data-toggle="modal">Cancel</button>
-                <button id="r-dialog-enter" type="button" class="saveBtn btn btn-primary br0 bc0 width180px blue-dialog08">R Call</button>
+                <button id="r-dialog-enter" type="button" class="saveBtn btn btn-primary br0 bc0 width180px blue-dialog08">Analyze Layer</button>
               </div>
             </div><!-- /.modal-content -->
           </div><!-- /.modal-dialog -->
@@ -247,13 +249,28 @@
                 <i class="fa fa-bar-chart fa-3x"></i>
             </div>
             <div class="container-fluid">
-                <div class="row sheets hide">
+                <div class="row ml10">
+                    <h2>Kernel Density Analysis</h2>
+                </div>
+                <div id="ranalysisTrigger" class="row hide">
+                    <div class="col-sm-12 col-md-12 col-lg-12">
+                        <span class="col-sm-8 col-md-8 col-lg-8"><b>Analyze layer KDE</b>:</span>
+                        <button type="button" id="r-trigger-dialog-btn" class="col-sm-4 col-md-4 col-lg-4 btn pull-right br0 bc0 width250px blue-dialog08 white">Start</button>
+                    </div>
+                </div>
+                <div id="ranalysis" class="row hide">
                     <div class="col-sm-12 col-md-12 col-lg-12">
                         <h3>L-Function Plot</h3>
                     </div>
-                    <div class="col-sm-12 col-md-12 col-lg-12">
-                        <iframe></iframe>
+                    <div class="functionframe col-sm-12 col-md-12 col-lg-12">
+                        <iframe id="ranalysisFrame"></iframe>
                     </div>
+                    <div>
+                        <div class="btn-toolbar hide" id="contourBucketBtns" role="toolbar" style="transform:translateX(100px);"></div>
+                    </div>
+                    </br></br>
+                    <button type="button" id="r-contour-layer" class="col-sm-4 col-md-4 col-lg-4 btn pull-right br0 bc0 width250px blue-dialog08 white mr15">Load KDE Layer</button>
+                    <button type="button" id="r-contour-redo" class="hide col-sm-4 col-md-4 col-lg-4 btn pull-right br0 bc0 width250px blue-dialog08 white mr15">Analyze Again</button>
                 </div>
             </div>
         </div>
@@ -307,9 +324,10 @@
     <script src="js/sidebar_controller.js"></script>
 
     <!-- R -->
-    <script src="js/contour.js"></script>
+    
 
     <!-- Menu Toggle Script -->
+    <script src="js/contour.js"></script>
     <script src="js/action.js"></script>
     <script src="js/roverlay.js"></script>
     <script src="js/spreadsheets.js"></script>

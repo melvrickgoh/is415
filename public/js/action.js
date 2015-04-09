@@ -198,7 +198,7 @@ var submitTextSearchParameters = function(){
         var iconInfo = MAP.aggregatedTextSearchPoints('foursquare',input,undefined,response,masterIconURL);
         masterIconURL = iconInfo['url']; masterIconColor = iconInfo['color'];
         //MAP.loadVenuesProportionalLayer(input,response,groupColor);
-        //MAP.loadVenuesChoroplethLayer(input,response,groupColor);
+        MAP.loadVenuesChoroplethLayer(input,response,COLORS.randomColor());
       }
       foursquareDone = true;
       checkTextSearchComplete();

@@ -28,9 +28,17 @@ function RDAO(options){
 */
 RDAO.prototype.initPayload = function(userid,data,callback){
 	var locationData = data.data,
-	locationFileID = data.id,
-	dataArray = _rdataframe(locationFileID,userid,'checkinsCount',locationData);
-	this.insertNewRProcesses(dataArray,callback);
+	locationFileID = data.id;
+
+	this.checkIfRProcessTypeExists(locationFileID,userid,function(isExists,isExistsResults){
+		if (isExists) {
+			console.log("Data payload already exists");
+			callback(isExists,{message:"Data payload already exists",payload:data,userid:userid,uuid:locationFileID});
+		}else{
+			var dataArray = _rdataframe(locationFileID,userid,'checkinsCount',locationData);
+			_insertNewRProcesses(dataArray,userid,locationFileID,callback);
+		}
+	});
 }
 
 function _rdataframe(fileid,userid,weightCode,payload){
@@ -53,6 +61,22 @@ function _rdataframe(fileid,userid,weightCode,payload){
 	return rPayload;
 }
 
+RDAO.prototype.checkIfRProcessTypeExists = function(uuid,userid,callback){
+	var selectUserDetails = {
+		name:TABLENAME,
+		distinct:false,
+		attributes:[ID,UUID,USERID,RESPONSE,STATUS,LAT,LNG,WEIGHT],
+		conditions:[UUID + ' = \''+ uuid +'\'',USERID + " = '" + userid + "'"]
+	};
+	dao.select(selectUserDetails,function(isSuccess,result){
+		if (result.length >= 1){
+			callback(true,result);//selected length >= 1
+		}else{
+			callback(false,result);//selected length is 0 or less
+		}
+	});
+}
+
 RDAO.prototype.updateRProcess = function(rprocess,callback){
 	var updateRecordDetails = {
 		name:TABLENAME,
@@ -72,11 +96,20 @@ RDAO.prototype.updateRProcess = function(rprocess,callback){
 	});
 }
 
-RDAO.prototype.insertNewRProcess = function(rprocess,callback){
-	this.insertNewRProcesses([rprocess],callback);
+function _insertNewRProcesses(rprocesses,userid,uuid,callback){
+	var rExtracts = extractRProcessesDetails(rprocesses);
+	var newRProcDetails = {
+		name:TABLENAME,
+		attributes:[{name:USERID,type:'string'},{name:UUID,type:'string'},{name:STATUS,type:'string'},
+			{name:LAT,type:'float'},{name:LNG,type:'float'},{name:WEIGHT,type:'float'}],
+		values:rExtracts
+	};
+	dao.insert(newRProcDetails,function(isSuccess,result){
+		callback(isSuccess,{message:"New data payload inserted", payload:result, userid:userid, uuid:uuid});
+	});
 }
 
-RDAO.prototype.insertNewRProcesses = function(rprocesses,callback){
+RDAO.prototype.insertNewRProcesses = function(rprocesses,userid,uuid,callback){
 	var rExtracts = this.extractRProcessesDetails(rprocesses);
 	var newRProcDetails = {
 		name:TABLENAME,
@@ -85,8 +118,24 @@ RDAO.prototype.insertNewRProcesses = function(rprocesses,callback){
 		values:rExtracts
 	};
 	dao.insert(newRProcDetails,function(isSuccess,result){
-		callback(isSuccess,result);
+		callback(isSuccess,{message:"New data payload inserted", payload:result, userid:userid, uuid:uuid});
 	});
+}
+
+function extractRProcessesDetails(rprocesses){
+	var extract = [];
+	for (var i in rprocesses){
+		var rprocess = rprocesses[i];
+		extract.push({
+			"uuid":rprocess.uuid,
+			"userid":rprocess.userid,
+			"lat":rprocess.lat,
+			"lng":rprocess.lng,
+			"weight":rprocess.weight,
+			"status":"init"
+		});
+	}
+	return extract;
 }
 
 RDAO.prototype.extractRProcessesDetails = function(rprocesses){

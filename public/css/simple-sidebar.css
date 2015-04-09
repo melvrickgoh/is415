@@ -13,6 +13,9 @@
 .background05{
   background-color: rgba(255,255,255,0.5);
 }
+.width50px{
+  width: 50px;
+}
 .width100p{
   width: 100%;
 }
@@ -52,6 +55,9 @@
 .lh20{
   line-height: 20px;
 }
+.m0{
+  margin: 0px;
+}
 .ml5{
   margin-left: 5px;
 }
@@ -63,6 +69,12 @@
 }
 .mr10{
   margin-right: 10px;
+}
+.mr15{
+  margin-right: 15px;
+}
+.mr20{
+  margin-right: 20px;
 }
 .pl5{
   padding-left: 5px;
@@ -98,6 +110,9 @@
 }
 .blue-twitter{
   color:rgba(28, 146, 218, 0.8);
+}
+.blue-twitter-background{
+  background-color:rgba(28, 146, 218, 0.8);
 }
 .warning-dialog{
   background-color: rgba(250,100,100,0.7);
@@ -533,7 +548,7 @@ a:hover.tooltips span {
   transition-timing-function: cubic-bezier(0.25,0.1,0.25,1);
 }
 #r-overlay{
-  width: 600px;
+  width: 450px;
   height: 100%;
   max-width: 100%;
   background-color: rgba(255, 255, 255, 0.8);
@@ -541,10 +556,13 @@ a:hover.tooltips span {
   position: absolute;
   top: 0px;
   right:0px;
-  text-align:center;
   transition-property: all;
   transition-duration: .5s;
   transition-timing-function: cubic-bezier(0.25,0.1,0.25,1);
+}
+#ranalysisFrame {
+  width: 420px;
+  height: 400px;
 }
 #spreadsheets-overlay.closed, #r-overlay.closed{
   max-width: 0%;

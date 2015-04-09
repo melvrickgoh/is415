@@ -10,12 +10,13 @@ function SpatiaR(){
 		}
 	}
 
-	this.spatiaRJSON = function(data){
-		console.log(DATA_COMBINE.SPATIA_R_HASH);
-		var keys = Object.keys(DATA_COMBINE.SPATIA_R_HASH);
-		XHRP('/api/r/test',JSON.stringify({data:DATA_COMBINE.SPATIA_R_HASH[keys[0]]}),function(response){
-			var jresp = JSON.parse(response);
-			console.log(jresp);
+	this.triggerKDEDBLoad = function(){
+		OVERLAY.show();
+		var layertitle = R_CONSOLE.rAnalysisFormValues();
+		XHRP('/api/r/test',JSON.stringify({data:DATA_COMBINE.SPATIA_R_HASH[layertitle]}),function(response){
+			var dbPayload = JSON.parse(response);
+			R_CONSOLE.hideRDialog();
+			R_OVERLAY.initializeKDEAnalysisProcess(dbPayload);
 		});
 	}
 }
@@ -30,8 +31,10 @@ function SpatiaRConsole(){
 	rDialogEnter.click(triggerKDECall);
 	rDialogCancel.click(function(){R_CONSOLE.hideRDialog();});
 
+	var rLayersAnalysisSelector = $('#analyzeLayerR');
+
 	function triggerKDECall(){
-		//SPATIA_R.spatiaRJSON();
+		SPATIA_R.triggerKDEDBLoad();
 	}
 
 	this.showRDialog = function(){
@@ -43,7 +46,37 @@ function SpatiaRConsole(){
 		rDialog.addClass('hide');
 		rDialog.removeClass('show');
 	}
+
+	function _emptyRLayersDropdown(){
+    rLayersAnalysisSelector.empty();
+  }
+
+	//workbook selectors
+  this.loadRLayers = function(){
+    _emptyRLayersDropdown();
+    _loadRLayersAnalyzeSelection();
+  }
+  
+  function _loadRLayersAnalyzeSelection(){
+  	var r_hash = DATA_COMBINE.SPATIA_R_HASH,
+  	rLinks = Object.keys(r_hash);
+
+    var createAnalysisOption = function(payload){
+      $('<option></option>')
+        .html(payload.title)
+        .attr('value',payload.title)
+        .appendTo(rLayersAnalysisSelector);
+    }
+
+    for (var r in rLinks) {
+      createAnalysisOption(DATA_COMBINE.SPATIA_R_HASH[rLinks[r]]);
+    }
+  }
+
+  //data results acquisition
+  this.rAnalysisFormValues = function(){
+    return rLayersAnalysisSelector[0].value;
+  }
 }
 
 var R_CONSOLE = new SpatiaRConsole();
-R_CONSOLE.showRDialog();
