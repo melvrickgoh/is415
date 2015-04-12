@@ -207,6 +207,78 @@ var submitTextSearchParameters = function(){
 }
 
 var submitSearchParameters = function(){
+  var input = $('#search_amenities').val(),
+  masterIconURL, masterIconColor,
+  googleDone = false,
+  foursquareDone = false,
+  checkTextSearchComplete = function(){
+    if (googleDone && foursquareDone) {
+      OVERLAY.show('Aggregating and combining results');
+      DATA_COMBINE.cleanData(input);
+      MAP.loadCombinedPoints(input,masterIconURL,masterIconColor);
+      var postSavingAction = function(){
+        //KDE ACTION HERE
+      }
+      SPREADSHEETS_UI.setTitlesWithResults(input,Object.keys(LUNR.aggregated_store).length);
+      SPREADSHEETS_UI.setSearchDoneActionFlow(function(){
+        //yes to saving data
+        console.log('user decides to save data');
+      },postSavingAction);
+
+      SPREADSHEETS_UI.setSaveActionTrigger(function(){
+        SPREADSHEETS.API.storeDataToDrive();
+      });
+      SPREADSHEETS_UI.setCancelActionTrigger(postSavingAction);
+
+      OVERLAY.hide();
+
+      SPREADSHEETS_UI.showSearchDoneDialog();
+      hideTextLoader();
+    }
+  };
+
+  OVERLAY.show('Searching Google and Foursquare for ' + input);
+
+  if (MAP.POINT_CONTROLLER.HASH[input]){
+    alert('The search layer ' + input + ' already exists!');
+  }else{
+    showTextLoader(); //show loading spinner for results
+    PLACES_API.singaporeTextSearch(input,function(results,status,pagination){
+      if (status == google.maps.places.PlacesServiceStatus.OK) {
+        var iconInfo = MAP.aggregatedTextSearchPoints('google',input,pagination.D,results);
+        masterIconURL = iconInfo['url']; masterIconColor = iconInfo['color'];
+        if (pagination.hasNextPage){
+          pagination.nextPage();
+        }else{
+          googleDone = true;
+        }
+
+      }
+
+      if (status == "ZERO_RESULTS") {
+        alert('No results found');
+        googleDone = true;
+      }
+      checkTextSearchComplete();
+    });
+
+    VENUES_API.singaporeVenuesTextSearch(input,function(err,response){
+      if (err) {
+        alert('Unable to load layer. Please try again later.');
+      }else{
+        var iconInfo = MAP.aggregatedTextSearchPoints('foursquare',input,undefined,response,masterIconURL);
+        masterIconURL = iconInfo['url']; masterIconColor = iconInfo['color'];
+        //MAP.loadVenuesProportionalLayer(input,response,groupColor);
+        MAP.loadVenuesChoroplethLayer(input,response,COLORS.randomColor());
+      }
+      foursquareDone = true;
+      checkTextSearchComplete();
+    });
+  }
+}
+
+/* old search parameters for google
+var submitSearchParameters = function(){
   var input = $('#search_amenities').val();
   var showSearchErrorMessage = function(){
 
@@ -228,7 +300,7 @@ var submitSearchParameters = function(){
       });
   }
 }
-
+*/
 var submitVenuesSearchParameters = function(){
   var input = $('#search_foursquare').val();
   var showSearchErrorMessage = function(){
@@ -312,6 +384,20 @@ var showTextLoader = function(){
     search_text_arrow.style.visibility = 'visible';
 }
 
+var main_categories = function(callback) {
+  var xmlhttp = new XMLHttpRequest();
+  var url = "../data/categories.json";
+
+  xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+      var data = JSON.parse(xmlhttp.responseText);
+      callback(data);
+    }
+  }
+  xmlhttp.open("GET", url, true);
+  xmlhttp.send();
+}
+/* original
 var autosuggestPlacesSearch = function(){
   XHR('/autosuggest/places',function(response){
     place_categories = JSON.parse(response);
@@ -345,6 +431,47 @@ var autosuggestPlacesSearch = function(){
     });
   });
 }
+*/
+
+var autosuggestPlacesSearch = function(){
+     
+  main_categories(function(data) {
+    //console.log("place categories : " + JSON.stringify(data));
+    var categories = [];
+    for (var category in data) {
+      categories.push(category);
+    }
+    console.log("place categories : " + JSON.stringify(categories));
+    
+    var states = new Bloodhound({
+      datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+      queryTokenizer: Bloodhound.tokenizers.whitespace,
+      local: $.map(categories, function(state) { return { value: state }; })
+    });
+     
+    // kicks off the loading/processing of `local` and `prefetch`
+    states.initialize();
+     
+    $('#search_amenities').typeahead({
+      hint: true,
+      highlight: true,
+      minLength: 1
+    },
+    {
+      name: 'states',
+      displayKey: 'value',
+      source: states.ttAdapter(),
+      templates: {
+        empty: [
+          '<div class="empty-message">',
+          'No such category found',
+          '</div>'
+        ].join('\n')
+      }
+    });
+  }); 
+}
+
 
 var autosuggestVenuesSearch = function(){
   XHR('/api/foursquare/custom_categories',function(response){

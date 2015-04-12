@@ -284,7 +284,9 @@ function _spreadsheetsAggregateData(spreadsheet,callback){
 		},function(err,cells){
 			var cellsData = cells['cells'];
 			var sheetInfo = _getWorksheetInfo(cellsData);
+			console.log(sheetInfo);
 			worksheetsResponse[sheetInfo['id']]['cells'] = _parsePointData(cellsData);
+			console.log(worksheetsResponse[sheetInfo['id']]['cells']);
 			worksheetsCounter++;
 
 			if (worksheetsCounter == worksheets.length){
